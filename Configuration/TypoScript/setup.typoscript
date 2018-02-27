@@ -1,0 +1,17 @@
+plugin.tx_form {
+    settings {
+        yamlConfigurations {
+            1511193633 = EXT:repeatable_form_elements/Configuration/Yaml/FormSetup.yaml
+        }
+    }
+}
+
+page {
+    includeJSFooter {
+        1511193639 = EXT:repeatable_form_elements/Resources/Public/JavaScript/Form/Frontend/RepeatableContainer.js
+    }
+
+    includeCSS {
+        repeatableFormElements = EXT:repeatable_form_elements/Resources/Public/StyleSheets/app.css
+    }
+}

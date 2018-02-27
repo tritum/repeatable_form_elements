@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.0" xmlns:t3="http://typo3.org/schemas/xliff">
+    <file t3:id="1511194483" source-language="en" target-language="de" datatype="plaintext" original="messages" date="2017-11-20T11:32:45Z" product-name="repeatable_form_elements">
+        <header/>
+        <body>
+            <trans-unit id="validation.error.1518701681">
+                <source>Maximum limit</source>
+                <target>Maximum limit</target>
+            </trans-unit>
+            <trans-unit id="validation.error.1518701682">
+                <source>Minimum limit</source>
+                <target>Minimum limit</target>
+            </trans-unit>
+            <trans-unit id="button.copy.label">
+                <source>Copy</source>
+                <target>Kopieren</target>
+            </trans-unit>
+            <trans-unit id="button.remove.label">
+                <source>Remove</source>
+                <target>Löschen</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

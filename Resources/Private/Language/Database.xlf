@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.0" xmlns:t3="http://typo3.org/schemas/xliff">
+    <file t3:id="1511194481" source-language="en" datatype="plaintext" original="messages" date="2017-11-20T11:32:45Z" product-name="repeatable_form_elements">
+        <header/>
+        <body>
+            <trans-unit id="formEditor.elements.RepeatableContainer.label">
+                <source>Repeatable container</source>
+            </trans-unit>
+            <trans-unit id="formEditor.elements.RepeatableContainer.editor.label.label">
+                <source>Repeatable container</source>
+            </trans-unit>
+            <trans-unit id="formEditor.elements.RepeatableContainer.editor.copyButtonLabel.label">
+                <source>Copy button label</source>
+            </trans-unit>
+            <trans-unit id="formEditor.elements.RepeatableContainer.editor.copyButtonLabel.value">
+                <source>Copy</source>
+            </trans-unit>
+            <trans-unit id="formEditor.elements.RepeatableContainer.editor.removeButtonLabel.label">
+                <source>Remove button label</source>
+            </trans-unit>
+            <trans-unit id="formEditor.elements.RepeatableContainer.editor.removeButtonLabel.value">
+                <source>Remove</source>
+            </trans-unit>
+            <trans-unit id="formEditor.elements.RepeatableContainer.editor.minimumCopies.label">
+                <source>Minimum number of copies</source>
+            </trans-unit>
+            <trans-unit id="formEditor.elements.RepeatableContainer.editor.maximumCopies.label">
+                <source>Maximum number of copies</source>
+            </trans-unit>
+            <trans-unit id="formEditor.elements.RepeatableContainer.editor.showRemoveButton.label">
+                <source>Show remove button</source>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

@@ -1,0 +1,24 @@
+{
+    "name": "tritum/repeatable_form_elements",
+    "description": "",
+    "type": "typo3-cms-extension",
+    "require": {
+        "typo3/cms": "~8.7"
+    },
+    "replace": {
+        "repeatable_form_elements": "self.version",
+        "tritum/repeatable_form_elements": "self.version"
+    },
+    "license": "GPL-2.0+",
+    "authors": [
+        {
+            "name": "Ralf Zimemrmann TRITUM GmbH",
+            "email": "ralf.zimmermann@tritum.de"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "TRITUM\\RepeatableFormElements\\": "Classes/" 
+        }
+    }
+}

@@ -1,0 +1,24 @@
+TYPO3:
+  CMS:
+    Form:
+      prototypes:
+        standard:
+          formElementsDefinition:
+            Form:
+              renderingOptions:
+                translation:
+                  translationFile:
+                    - 'EXT:form/Resources/Private/Language/locallang.xlf'
+                    - 'EXT:repeatable_form_elements/Resources/Private/Language/locallang.xlf'
+                partialRootPaths:
+                  20: 'EXT:repeatable_form_elements/Resources/Private/Frontend/Partials'
+
+            RepeatableContainer:
+              __inheritances:
+                10: 'TYPO3.CMS.Form.prototypes.standard.formElementsDefinition.Fieldset'
+              implementationClassName: 'TRITUM\RepeatableFormElements\FormElements\RepeatableContainer'
+              properties:
+                minimumCopies: 0
+                maximumCopies: 10
+                showRemoveButton: true
+                elementClassAttribute: 'repeatable-container'
