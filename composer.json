@@ -1,5 +1,5 @@
 {
-    "name": "tritum/repeatable_form_elements",
+    "name": "tritum/repeatable-form-elements",
     "description": "",
     "type": "typo3-cms-extension",
     "require": {

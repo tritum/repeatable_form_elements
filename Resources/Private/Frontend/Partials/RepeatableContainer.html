@@ -8,12 +8,12 @@
                         <div class="btn-group" role="group">
                             <f:if condition="{element.renderingOptions._isReferenceContainer}">
                                 <button class="btn btn-default btn-sm" type="button" title="{formvh:translateElementProperty(element: element, property: 'copyButtonLabel')}" data-repeatable-container data-copy-button data-copy-button-for="{element.identifier}">
-                                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                                    {formvh:translateElementProperty(element: element, property: 'copyButtonLabel')} <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                                 </button>
                             </f:if>
                             <f:if condition="{element.properties.showRemoveButton}">
                                 <button class="btn btn-default btn-sm disabled hidden" type="button" title="{formvh:translateElementProperty(element: element, property: 'removeButtonLabel')}" data-repeatable-container data-remove-button data-remove-button-for="{element.identifier}">
-                                    <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
+                                    {formvh:translateElementProperty(element: element, property: 'removeButtonLabel')} <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
                                 </button>
                             </f:if>
                         </div>

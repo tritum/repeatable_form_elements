@@ -4,16 +4,10 @@
         <header/>
         <body>
             <trans-unit id="validation.error.1518701681">
-                <source>Maximum limit</source>
+                <source>The maximum number of copies has been reached</source>
             </trans-unit>
             <trans-unit id="validation.error.1518701682">
-                <source>Minimum limit</source>
-            </trans-unit>
-            <trans-unit id="button.copy.label">
-                <source>Copy</source>
-            </trans-unit>
-            <trans-unit id="button.remove.label">
-                <source>Remove</source>
+                <source>The minimum number of copies has not yet been reached</source>
             </trans-unit>
         </body>
     </file>

@@ -4,20 +4,12 @@
         <header/>
         <body>
             <trans-unit id="validation.error.1518701681">
-                <source>Maximum limit</source>
-                <target>Maximum limit</target>
+                <source>The maximum number of copies has been reached</source>
+                <target>Die maximale Anzahl von Kopien wurde erreicht</target>
             </trans-unit>
             <trans-unit id="validation.error.1518701682">
-                <source>Minimum limit</source>
-                <target>Minimum limit</target>
-            </trans-unit>
-            <trans-unit id="button.copy.label">
-                <source>Copy</source>
-                <target>Kopieren</target>
-            </trans-unit>
-            <trans-unit id="button.remove.label">
-                <source>Remove</source>
-                <target>Löschen</target>
+                <source>The minimum number of copies has not yet been reached</source>
+                <target>Die Mindestanzahl von Kopien wurde noch nicht erreicht</target>
             </trans-unit>
         </body>
     </file>

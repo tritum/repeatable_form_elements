@@ -4,7 +4,7 @@ $EM_CONF['repeatable_form_elements'] = [
     'title' => 'Repeatable form elements',
     'description' => '',
     'category' => '',
-    'state' => 'beta',
+    'state' => 'stable',
     'uploadfolder' => 0,
     'createDirs' => '',
     'clearCacheOnLoad' => 0,
@@ -13,7 +13,7 @@ $EM_CONF['repeatable_form_elements'] = [
     'version' => '0.0.1',
     'constraints' => [
         'depends' => [
-            'typo3' => '8.7.0-8.99.99',
+            'typo3' => '8.7.0-9.2.0',
         ],
         'conflicts' => [],
         'suggests' => [],
