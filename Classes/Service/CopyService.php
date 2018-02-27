@@ -142,13 +142,13 @@ class CopyService
                         $referenceContainer->setRenderingOption('_copyReference', $firstReferenceContainer->getIdentifier());
 
                         if ($copyNumber > $maximumCopies) {
-                            $this->addError($referenceContainer, 1518701681, 'Maximum limit');
+                            $this->addError($referenceContainer, 1518701681, 'The maximum number of copies has been reached');
                         }
                         $copyNumber++;
                     }
 
                     if ($copyNumber - 1 < $minimumCopies) {
-                        $this->addError($firstReferenceContainer, 1518701682, 'Minimum limit');
+                        $this->addError($firstReferenceContainer, 1518701682, 'The minimum number of copies has not yet been reached');
                     }
                 }
 
