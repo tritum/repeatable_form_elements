@@ -28,9 +28,6 @@ included form elements it will display buttons for copying/ removing new sets of
 This extension is still in beta phase. Right now, a bunch of people are testing the
 implementation. Some parts still need some love. Do not use in production right now.
 
-* add better icon to form editor
-* testing testing testing
-
 ## Credits
 
 This TYPO3 extension was created by Ralf Zimmermann (https://www.tritum.de).
