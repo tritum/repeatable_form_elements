@@ -28,9 +28,8 @@ included form elements it will display buttons for copying/ removing new sets of
 This extension is still in beta phase. Right now, a bunch of people are testing the
 implementation. Some parts still need some love. Do not use in production right now.
 
-* improve min/ max validation messages
 * add better icon to form editor
-* add text to copy/ remove buttons
+* testing testing testing
 
 ## Credits
 
