@@ -4,12 +4,12 @@
         <header/>
         <body>
             <trans-unit id="validation.error.1518701681">
-                <source>The maximum number of copies has been reached</source>
-                <target>Die maximale Anzahl von Kopien wurde erreicht</target>
+                <source>The maximum number of copies has been reached.</source>
+                <target>Die maximale Anzahl an Kopien wurde erreicht.</target>
             </trans-unit>
             <trans-unit id="validation.error.1518701682">
-                <source>The minimum number of copies has not yet been reached</source>
-                <target>Die Mindestanzahl von Kopien wurde noch nicht erreicht</target>
+                <source>The minimum number of copies has not yet been reached.</source>
+                <target>Die minimale Anzahl an Kopien wurde noch nicht erreicht.</target>
             </trans-unit>
         </body>
     </file>

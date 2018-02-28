@@ -35,4 +35,4 @@ This TYPO3 extension was created by Ralf Zimmermann (https://www.tritum.de).
 ## Thank you
 
 Nora Winter - "Faktenkopf" at www.faktenhaus.de - sponsored this great extension.
-www.b13.de connected those great people.
+The fine people at www.b13.de connected all the people involved.

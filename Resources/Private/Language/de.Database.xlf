@@ -5,15 +5,15 @@
         <body>
             <trans-unit id="formEditor.elements.RepeatableContainer.label">
                 <source>Repeatable container</source>
-                <target>Repeatable container</target>
+                <target>Repeatable Container</target>
             </trans-unit>
             <trans-unit id="formEditor.elements.RepeatableContainer.editor.label.label">
                 <source>Repeatable container</source>
-                <target>Repeatable container</target>
+                <target>Repeatable Container</target>
             </trans-unit>
             <trans-unit id="formEditor.elements.RepeatableContainer.editor.copyButtonLabel.label">
                 <source>Copy button label</source>
-                <target>Kopierbutton Label</target>
+                <target>Label Kopier-Button</target>
             </trans-unit>
             <trans-unit id="formEditor.elements.RepeatableContainer.editor.copyButtonLabel.value">
                 <source>Copy</source>
@@ -21,7 +21,7 @@
             </trans-unit>
             <trans-unit id="formEditor.elements.RepeatableContainer.editor.removeButtonLabel.label">
                 <source>Remove button label</source>
-                <target>Löschbutton Label</target>
+                <target>Label Lösch-Button</target>
             </trans-unit>
             <trans-unit id="formEditor.elements.RepeatableContainer.editor.removeButtonLabel.value">
                 <source>Remove</source>
@@ -29,15 +29,15 @@
             </trans-unit>
             <trans-unit id="formEditor.elements.RepeatableContainer.editor.minimumCopies.label">
                 <source>Minimum number of copies</source>
-                <target>Minimale Anzahl der Kopien</target>
+                <target>Minimale Anzahl an Kopien</target>
             </trans-unit>
             <trans-unit id="formEditor.elements.RepeatableContainer.editor.maximumCopies.label">
                 <source>Maximum number of copies</source>
-                <target>Maximale Anzahl der Kopien</target>
+                <target>Maximale Anzahl an Kopien</target>
             </trans-unit>
             <trans-unit id="formEditor.elements.RepeatableContainer.editor.showRemoveButton.label">
                 <source>Show remove button</source>
-                <target>Lösch-Button anzeigen</target>
+                <target>Zeige Lösch-Button</target>
             </trans-unit>
         </body>
     </file>
