@@ -8,8 +8,8 @@ TYPO3:
               renderingOptions:
                 translation:
                   translationFile:
-                    - 'EXT:form/Resources/Private/Language/locallang.xlf'
-                    - 'EXT:repeatable_form_elements/Resources/Private/Language/locallang.xlf'
+                    10: 'EXT:form/Resources/Private/Language/locallang.xlf'
+                    20: 'EXT:repeatable_form_elements/Resources/Private/Language/locallang.xlf'
                 partialRootPaths:
                   20: 'EXT:repeatable_form_elements/Resources/Private/Frontend/Partials'
 
