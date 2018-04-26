@@ -19,8 +19,10 @@ use TRITUM\RepeatableFormElements\FormElements\RepeatableContainerInterface;
 use TRITUM\RepeatableFormElements\Service\CopyService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
+use TYPO3\CMS\Form\Domain\Model\FormElements\FormElementInterface;
 use TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface;
 use TYPO3\CMS\Form\Domain\Model\Renderable\RenderableInterface;
+use TYPO3\CMS\Form\Domain\Model\Renderable\RootRenderableInterface;
 use TYPO3\CMS\Form\Domain\Runtime\FormRuntime;
 
 /*
@@ -57,6 +59,27 @@ class FormHooks
         }
 
         return $currentPage;
+    }
+
+    /**
+     * @param FormRuntime $formRuntime
+     * @param RootRenderableInterface $renderable
+     * @return void
+     */
+    public function beforeRendering(FormRuntime $formRuntime, RootRenderableInterface $renderable)
+    {
+        if ($renderable instanceof FormElementInterface) {
+            $properties = $renderable->getProperties();
+
+            $fluidAdditionalAttributes = $properties['fluidAdditionalAttributes'] ?? [];
+            $fluidAdditionalAttributes['data-element-type'] = $renderable->getType();
+            if ($renderable->getType() === 'DatePicker') {
+                $fluidAdditionalAttributes['data-element-datepicker-enabled'] = (int)$renderable->getProperties()['enableDatePicker'];
+                $fluidAdditionalAttributes['data-element-datepicker-date-format'] = $renderable->getProperties()['dateFormat'];
+            }
+            
+            $renderable->setProperty('fluidAdditionalAttributes', $fluidAdditionalAttributes);
+        }
     }
 
     /**

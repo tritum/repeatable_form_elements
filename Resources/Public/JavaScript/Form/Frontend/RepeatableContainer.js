@@ -131,6 +131,7 @@ $(document).on('initialize-repeatable-container-copy-buttons', function(event, c
                     $elementCopies.last().after($containerClone);
                 }
 
+                $(document).trigger('after-element-copy', [$containerClone]);
                 $(document).trigger('initialize-repeatable-container-copy-buttons', [containerClones]);
                 $(document).trigger('initialize-repeatable-container-remove-buttons');
             });
@@ -183,6 +184,34 @@ $(document).on('initialize-repeatable-container-remove-buttons', function(event)
 
                 $referenceElement.empty().off().remove();
                 $(document).trigger('initialize-repeatable-container-remove-buttons');
+            });
+        }
+    });
+});
+
+$(document).on('after-element-copy', function(event, $containerClone) {
+    $('[data-element-type="DatePicker"]').each(function(e) {
+        var $element = $(this),
+            dateFormat;
+
+        if (!$element.hasClass('hasDatepicker') && parseInt($element.attr('data-element-datepicker-enabled')) === 1) {
+            dateFormat = $element.attr('data-element-datepicker-date-format');
+
+            dateFormat = dateFormat.replace('d', 'dd');
+            dateFormat = dateFormat.replace('j', 'o');
+            dateFormat = dateFormat.replace('l', 'DD');
+            dateFormat = dateFormat.replace('F', 'MM');
+            dateFormat = dateFormat.replace('m', 'mm');
+            dateFormat = dateFormat.replace('n', 'm');
+            dateFormat = dateFormat.replace('Y', 'yy');
+
+            $('#' + $element.attr('id')).datepicker({
+                dateFormat: dateFormat
+            }).on('keydown', function(e) {
+                if(e.keyCode == 8 || e.keyCode == 46) {
+                    e.preventDefault();
+                    $.datepicker._clearDate(this);
+                }
             });
         }
     });
