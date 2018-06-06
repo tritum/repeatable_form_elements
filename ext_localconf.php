@@ -27,7 +27,7 @@ call_user_func(function () {
         $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['afterInitializeCurrentPage'][1511196413]
             = \TRITUM\RepeatableFormElements\Hooks\FormHooks::class;
 
-            $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['beforeRendering'][1511196413]
-                = \TRITUM\RepeatableFormElements\Hooks\FormHooks::class;
+        $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['beforeRendering'][1511196413]
+            = \TRITUM\RepeatableFormElements\Hooks\FormHooks::class;
     }
 });
