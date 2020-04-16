@@ -25,6 +25,7 @@ use TYPO3\CMS\Form\Domain\Model\FormElements\FormElementInterface;
 use TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface;
 use TYPO3\CMS\Form\Domain\Runtime\FormRuntime;
 use TYPO3\CMS\Form\Domain\Runtime\FormState;
+use TYPO3\CMS\Form\Mvc\ProcessingRule;
 use TYPO3\CMS\Form\Service\TranslationService;
 
 /*
@@ -209,6 +210,33 @@ class CopyService
             }
             $newElementCopy->setRenderingOption($key, $value);
         }
+
+        // begin - copy processing rules from orignalFormElement to newElementCopy
+        $origProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($originalFormElement->getIdentifier());
+
+        // Variant 1: 
+        // with modification in TYPO3\CMS\Form\Domain\Model\FormDefinition (clean solution)
+        // requires an additional method to modify processingRules
+        // 
+        // $this->formRuntime->getFormDefinition()->setProcessingRule($newElementCopy->getIdentifier(), $origProcessingRule);
+        //
+        // The following modification in TYPO3\CMS\Form\Domain\Model\FormDefinition is required:
+        // public function setProcessingRule(string $propertyPath, ProcessingRule $processingRule)
+        // {
+        //     $this->processingRules[$propertyPath] = $processingRule;
+        // }
+        
+        // Variant 2: 
+        // without modification in TYPO3\CMS\Form\Domain\Model\FormDefinition (workaround)
+        // Uses reflection to update the protected variable in FormDefinition
+        $processingRules = $this->formRuntime->getFormDefinition()->getProcessingRules();
+        $processingRules[$newElementCopy->getIdentifier()] = $origProcessingRule;
+		// modify FormDefinition instance via reflection
+        $reflectionClass = new \ReflectionClass('TYPO3\CMS\Form\Domain\Model\FormDefinition');
+        $reflectionProperty = $reflectionClass->getProperty('processingRules');
+        $reflectionProperty->setAccessible(true);
+        $reflectionProperty->setValue($this->formRuntime->getFormDefinition(), $processingRules);
+        // end - copy processing rules from orignalFormElement to newElementCopy       
 
         foreach ($originalFormElement->getValidators() as $validator) {
             $newElementCopy->addValidator($validator);
