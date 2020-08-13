@@ -1,20 +1,13 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 namespace TRITUM\RepeatableFormElements\Hooks;
 
-/*
- * This file is part of the TYPO3 CMS project.
- *
- * It is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License, either version 2
- * of the License, or any later version.
+/**
+ * This file is part of the "repeatable_form_elements" Extension for TYPO3 CMS.
  *
  * For the full copyright and license information, please read the
  * LICENSE.txt file that was distributed with this source code.
- *
- * The TYPO3 project - inspiring people to share!
  */
-
 use TRITUM\RepeatableFormElements\FormElements\RepeatableContainerInterface;
 use TRITUM\RepeatableFormElements\Service\CopyService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -25,24 +18,21 @@ use TYPO3\CMS\Form\Domain\Model\Renderable\RenderableInterface;
 use TYPO3\CMS\Form\Domain\Model\Renderable\RootRenderableInterface;
 use TYPO3\CMS\Form\Domain\Runtime\FormRuntime;
 
-/*
- * @author Ralf Zimmermann TRITUM GmbH <ralf.zimmermann@tritum.de>
- */
 class FormHooks
 {
     /**
      * @param FormRuntime $formRuntime
-     * @param null|CompositeRenderableInterface $currentPage
-     * @param null|CompositeRenderableInterface $lastPage
+     * @param CompositeRenderableInterface|null $currentPage
+     * @param CompositeRenderableInterface|null $lastPage
      * @param array $rawRequestArguments
-     * @return null|CompositeRenderableInterface
+     * @return CompositeRenderableInterface|null
      */
     public function afterInitializeCurrentPage(
         FormRuntime $formRuntime,
         CompositeRenderableInterface $currentPage = null,
         CompositeRenderableInterface $lastPage = null,
         array $rawRequestArguments = []
-    ) {
+    ): ?CompositeRenderableInterface {
         foreach ($formRuntime->getPages() as $page) {
             $this->setRootRepeatableContainerIdentifiers($page, $formRuntime);
         }
@@ -64,9 +54,8 @@ class FormHooks
     /**
      * @param FormRuntime $formRuntime
      * @param RootRenderableInterface $renderable
-     * @return void
      */
-    public function beforeRendering(FormRuntime $formRuntime, RootRenderableInterface $renderable)
+    public function beforeRendering(FormRuntime $formRuntime, RootRenderableInterface $renderable): void
     {
         if ($renderable instanceof FormElementInterface) {
             $properties = $renderable->getProperties();
@@ -77,7 +66,7 @@ class FormHooks
                 $fluidAdditionalAttributes['data-element-datepicker-enabled'] = (int)$renderable->getProperties()['enableDatePicker'];
                 $fluidAdditionalAttributes['data-element-datepicker-date-format'] = $renderable->getProperties()['dateFormat'];
             }
-            
+
             $renderable->setProperty('fluidAdditionalAttributes', $fluidAdditionalAttributes);
         }
     }
@@ -91,7 +80,7 @@ class FormHooks
         RenderableInterface $renderable,
         FormRuntime $formRuntime,
         array $repeatableContainerIdentifiers = []
-    ) {
+    ): void {
         $isRepeatableContainer = $renderable instanceof RepeatableContainerInterface ? true : false;
 
         $hasOriginalIdentifier = isset($renderable->getRenderingOptions()['_originalIdentifier']);
@@ -113,9 +102,25 @@ class FormHooks
             $formRuntime->getFormDefinition()->unregisterRenderable($renderable);
             $renderable->setIdentifier($newIdentifier);
             $formRuntime->getFormDefinition()->registerRenderable($renderable);
-            $validators = $formRuntime->getFormDefinition()->getProcessingRule($originalIdentifier)->getValidators();
-            foreach ($validators as $validator) {
+
+            $originalProcessingRule = $formRuntime->getFormDefinition()->getProcessingRule($originalIdentifier);
+            $newProcessingRule = $formRuntime->getFormDefinition()->getProcessingRule($newIdentifier);
+
+            $newProcessingRule->injectPropertyMappingConfiguration($originalProcessingRule->getPropertyMappingConfiguration());
+            try {
+                $newProcessingRule->setDataType($originalProcessingRule->getDataType());
+            } catch (\TypeError $error) {
+            }
+
+            foreach ($originalProcessingRule->getValidators() as $validator) {
                 $renderable->addValidator($validator);
+            }
+
+            foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['afterBuildingFinished'] ?? [] as $className) {
+                $hookObj = GeneralUtility::makeInstance($className);
+                if (method_exists($hookObj, 'afterBuildingFinished')) {
+                    $hookObj->afterBuildingFinished($renderable);
+                }
             }
         }
 

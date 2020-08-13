@@ -55,9 +55,11 @@ TYPO3:
           formEditor:
             translationFile:
               10: 'EXT:form/Resources/Private/Language/Database.xlf'
-              20: 'EXT:repeatable_form_elements/Resources/Private/Language/Database.xlf'
+              1595333290: 'EXT:repeatable_form_elements/Resources/Private/Language/Database.xlf'
+            translationFiles:
+              1595333290: 'EXT:repeatable_form_elements/Resources/Private/Language/Database.xlf'
             dynamicRequireJsModules:
               additionalViewModelModules:
-                - 'TYPO3/CMS/RepeatableFormElements/Form/Backend/FormEditor/ViewModel'
+                1595333290: 'TYPO3/CMS/RepeatableFormElements/Form/Backend/FormEditor/ViewModel'
             formEditorPartials:
               FormElement-RepeatableContainer: 'Stage/Fieldset'
