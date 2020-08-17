@@ -169,6 +169,13 @@ class CopyService
         $parentRenderableForNewContainer->addElement($newContainer);
         $parentRenderableForNewContainer->moveElementAfter($newContainer, $moveAfterContainer);
 
+        foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['afterBuildingFinished'] ?? [] as $className) {
+            $hookObj = GeneralUtility::makeInstance($className);
+            if (method_exists($hookObj, 'afterBuildingFinished')) {
+                $hookObj->afterBuildingFinished($newContainer);
+            }
+        }
+
         foreach ($copyFromContainer->getElements() as $originalFormElement) {
             $this->createNestedElements($originalFormElement, $newContainer, $copyFromContainer->getIdentifier(), $newIdentifier);
         }
@@ -212,13 +219,6 @@ class CopyService
         foreach ($originalProcessingRule->getValidators() as $validator) {
             $newElementCopy->addValidator($validator);
         }
-
-        foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['afterBuildingFinished'] ?? [] as $className) {
-            $hookObj = GeneralUtility::makeInstance($className);
-            if (method_exists($hookObj, 'afterBuildingFinished')) {
-                $hookObj->afterBuildingFinished($newElementCopy);
-            }
-        }
     }
 
     /**
@@ -239,6 +239,13 @@ class CopyService
             $originalFormElement->getType()
         );
         $this->copyOptions($newFormElement, $originalFormElement);
+
+        foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['afterBuildingFinished'] ?? [] as $className) {
+            $hookObj = GeneralUtility::makeInstance($className);
+            if (method_exists($hookObj, 'afterBuildingFinished')) {
+                $hookObj->afterBuildingFinished($newFormElement);
+            }
+        }
 
         if ($originalFormElement instanceof CompositeRenderableInterface) {
             foreach ($originalFormElement->getElements() as $originalChildFormElement) {
