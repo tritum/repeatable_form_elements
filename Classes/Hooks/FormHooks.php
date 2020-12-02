@@ -19,6 +19,7 @@ use TRITUM\RepeatableFormElements\FormElements\RepeatableContainerInterface;
 use TRITUM\RepeatableFormElements\Service\CopyService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
+use TYPO3\CMS\Form\Domain\Model\FormElements\AbstractFormElement;
 use TYPO3\CMS\Form\Domain\Model\FormElements\FormElementInterface;
 use TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface;
 use TYPO3\CMS\Form\Domain\Model\Renderable\RenderableInterface;
@@ -110,6 +111,11 @@ class FormHooks
             }
             $originalIdentifier = $renderable->getIdentifier();
             $renderable->setRenderingOption('_originalIdentifier', $originalIdentifier);
+
+            if($renderable instanceof AbstractFormElement && $renderable->getDefaultValue()) {
+                $formRuntime->getFormDefinition()->addElementDefaultValue($newIdentifier, $renderable->getDefaultValue());
+            }
+
             $formRuntime->getFormDefinition()->unregisterRenderable($renderable);
             $renderable->setIdentifier($newIdentifier);
             $formRuntime->getFormDefinition()->registerRenderable($renderable);
