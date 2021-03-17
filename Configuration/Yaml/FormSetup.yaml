@@ -9,9 +9,11 @@ TYPO3:
                 translation:
                   translationFile:
                     10: 'EXT:form/Resources/Private/Language/locallang.xlf'
-                    20: 'EXT:repeatable_form_elements/Resources/Private/Language/locallang.xlf'
+                    1595333290: 'EXT:repeatable_form_elements/Resources/Private/Language/locallang.xlf'
+                  translationFiles:
+                    1595333290: 'EXT:repeatable_form_elements/Resources/Private/Language/locallang.xlf'
                 partialRootPaths:
-                  20: 'EXT:repeatable_form_elements/Resources/Private/Frontend/Partials'
+                  1595333290: 'EXT:repeatable_form_elements/Resources/Private/Frontend/Partials'
 
             RepeatableContainer:
               __inheritances:

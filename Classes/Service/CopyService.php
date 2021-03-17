@@ -1,20 +1,13 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 namespace TRITUM\RepeatableFormElements\Service;
 
-/*
- * This file is part of the TYPO3 CMS project.
- *
- * It is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License, either version 2
- * of the License, or any later version.
+/**
+ * This file is part of the "repeatable_form_elements" Extension for TYPO3 CMS.
  *
  * For the full copyright and license information, please read the
  * LICENSE.txt file that was distributed with this source code.
- *
- * The TYPO3 project - inspiring people to share!
  */
-
 use TRITUM\RepeatableFormElements\FormElements\RepeatableContainerInterface;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -27,9 +20,6 @@ use TYPO3\CMS\Form\Domain\Runtime\FormRuntime;
 use TYPO3\CMS\Form\Domain\Runtime\FormState;
 use TYPO3\CMS\Form\Service\TranslationService;
 
-/*
- * @author Ralf Zimmermann TRITUM GmbH <ralf.zimmermann@tritum.de>
- */
 class CopyService
 {
     /**
@@ -102,7 +92,7 @@ class CopyService
     protected function copyRepeatableContainersFromArguments(
         array $requestArguments,
         array $argumentPath = []
-    ) {
+    ): void {
         foreach ($requestArguments as $argumentKey => $argumentValue) {
             if (is_array($argumentValue)) {
                 $originalContainer = $this->getRepeatableContainerByOriginalIdentifier((string)$argumentKey);
@@ -179,6 +169,13 @@ class CopyService
         $parentRenderableForNewContainer->addElement($newContainer);
         $parentRenderableForNewContainer->moveElementAfter($newContainer, $moveAfterContainer);
 
+        foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['afterBuildingFinished'] ?? [] as $className) {
+            $hookObj = GeneralUtility::makeInstance($className);
+            if (method_exists($hookObj, 'afterBuildingFinished')) {
+                $hookObj->afterBuildingFinished($newContainer);
+            }
+        }
+
         foreach ($copyFromContainer->getElements() as $originalFormElement) {
             $this->createNestedElements($originalFormElement, $newContainer, $copyFromContainer->getIdentifier(), $newIdentifier);
         }
@@ -193,7 +190,7 @@ class CopyService
     protected function copyOptions(
         FormElementInterface $newElementCopy,
         FormElementInterface $originalFormElement
-    ) {
+    ): void {
         $newElementCopy->setLabel($originalFormElement->getLabel());
         $newElementCopy->setDefaultValue($originalFormElement->getDefaultValue());
         foreach ($originalFormElement->getProperties() as $key => $value) {
@@ -210,7 +207,16 @@ class CopyService
             $newElementCopy->setRenderingOption($key, $value);
         }
 
-        foreach ($originalFormElement->getValidators() as $validator) {
+        $originalProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($originalFormElement->getIdentifier());
+        $newProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($newElementCopy->getIdentifier());
+
+        $newProcessingRule->injectPropertyMappingConfiguration($originalProcessingRule->getPropertyMappingConfiguration());
+        try {
+            $newProcessingRule->setDataType($originalProcessingRule->getDataType());
+        } catch (\TypeError $error) {
+        }
+
+        foreach ($originalProcessingRule->getValidators() as $validator) {
             $newElementCopy->addValidator($validator);
         }
     }
@@ -226,13 +232,20 @@ class CopyService
         CompositeRenderableInterface $parentFormElementCopy,
         string $identifierOriginal,
         string $identifierReplacement
-    ) {
+    ): void {
         $newIdentifier = str_replace($identifierOriginal, $identifierReplacement, $originalFormElement->getIdentifier());
         $newFormElement = $parentFormElementCopy->createElement(
             $newIdentifier,
             $originalFormElement->getType()
         );
         $this->copyOptions($newFormElement, $originalFormElement);
+
+        foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['afterBuildingFinished'] ?? [] as $className) {
+            $hookObj = GeneralUtility::makeInstance($className);
+            if (method_exists($hookObj, 'afterBuildingFinished')) {
+                $hookObj->afterBuildingFinished($newFormElement);
+            }
+        }
 
         if ($originalFormElement instanceof CompositeRenderableInterface) {
             foreach ($originalFormElement->getElements() as $originalChildFormElement) {
@@ -243,9 +256,9 @@ class CopyService
 
     /**
      * @param string $originalIdentifier
-     * @return null|RepeatableContainerInterface
+     * @return RepeatableContainerInterface|null
      */
-    protected function getRepeatableContainerByOriginalIdentifier(string $originalIdentifier)
+    protected function getRepeatableContainerByOriginalIdentifier(string $originalIdentifier): ?RepeatableContainerInterface
     {
         if (
             !isset($this->repeatableContainersByOriginalIdentifier[$originalIdentifier])
@@ -278,7 +291,7 @@ class CopyService
         FormElementInterface $formElement,
         int $timestamp,
         string $defaultMessage = ''
-    ) {
+    ): void {
         $error = $this->getObjectManager()->get(
             Error::class,
             TranslationService::getInstance()->translateFormElementError(
@@ -303,7 +316,7 @@ class CopyService
     protected function removeDeletedRepeatableContainersFromFormValuesByRequest(
         array $requestArguments,
         array $argumentPath = []
-    ) {
+    ): void {
         foreach ($requestArguments as $argumentKey => $argumentValue) {
             if (is_array($argumentValue)) {
                 $originalContainer = $this->getRepeatableContainerByOriginalIdentifier((string)$argumentKey);
