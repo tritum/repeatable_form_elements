@@ -240,6 +240,15 @@ class CopyService
         );
         $this->copyOptions($newFormElement, $originalFormElement);
 
+        $originalProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($originalFormElement->getIdentifier());
+        $newProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($newIdentifier);
+
+        $newProcessingRule->injectPropertyMappingConfiguration($originalProcessingRule->getPropertyMappingConfiguration());
+        try {
+            $newProcessingRule->setDataType($originalProcessingRule->getDataType());
+        } catch (\TypeError $error) {
+        }
+
         foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['afterBuildingFinished'] ?? [] as $className) {
             $hookObj = GeneralUtility::makeInstance($className);
             if (method_exists($hookObj, 'afterBuildingFinished')) {
