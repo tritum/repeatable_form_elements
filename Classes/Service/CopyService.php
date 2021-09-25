@@ -9,15 +9,19 @@ namespace TRITUM\RepeatableFormElements\Service;
  * LICENSE.txt file that was distributed with this source code.
  */
 use TRITUM\RepeatableFormElements\FormElements\RepeatableContainerInterface;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Error\Error;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
+use TYPO3\CMS\Extbase\Property\PropertyMappingConfiguration;
+use TYPO3\CMS\Extbase\Validation\Validator\ValidatorInterface;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
 use TYPO3\CMS\Form\Domain\Model\FormElements\FormElementInterface;
 use TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface;
 use TYPO3\CMS\Form\Domain\Runtime\FormRuntime;
 use TYPO3\CMS\Form\Domain\Runtime\FormState;
+use TYPO3\CMS\Form\Mvc\ProcessingRule;
 use TYPO3\CMS\Form\Service\TranslationService;
 
 class CopyService
@@ -83,6 +87,35 @@ class CopyService
     {
         $this->copyRepeatableContainersFromArguments($this->formState->getFormValues());
         return $this;
+    }
+
+    /**
+     * @param string $originalFormElement
+     * @param string $newElementCopy
+     * @return ProcessingRule[]
+     * @internal
+     */
+    public function copyProcessingRule(
+        string $originalFormElement,
+        string $newElementCopy
+    ): array {
+        $typo3Version = new Typo3Version();
+        $originalProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($originalFormElement);
+
+        if ($typo3Version->getVersion() >= 11) {
+            GeneralUtility::addInstance(PropertyMappingConfiguration::class, $originalProcessingRule->getPropertyMappingConfiguration());
+            $newProcessingRule = GeneralUtility::makeInstance(ProcessingRule::class);
+        } else {
+            $newProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($newElementCopy);
+            $newProcessingRule->injectPropertyMappingConfiguration($originalProcessingRule->getPropertyMappingConfiguration());
+        }
+
+        try {
+            $newProcessingRule->setDataType($originalProcessingRule->getDataType());
+        } catch (\TypeError $error) {
+        }
+
+        return [$originalProcessingRule, $newProcessingRule];
     }
 
     /**
@@ -207,15 +240,9 @@ class CopyService
             $newElementCopy->setRenderingOption($key, $value);
         }
 
-        $originalProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($originalFormElement->getIdentifier());
-        $newProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($newElementCopy->getIdentifier());
+        [$originalProcessingRule] = $this->copyProcessingRule($originalFormElement->getIdentifier(), $newElementCopy->getIdentifier());
 
-        $newProcessingRule->injectPropertyMappingConfiguration($originalProcessingRule->getPropertyMappingConfiguration());
-        try {
-            $newProcessingRule->setDataType($originalProcessingRule->getDataType());
-        } catch (\TypeError $error) {
-        }
-
+        /** @var ValidatorInterface $validator */
         foreach ($originalProcessingRule->getValidators() as $validator) {
             $newElementCopy->addValidator($validator);
         }
@@ -239,15 +266,7 @@ class CopyService
             $originalFormElement->getType()
         );
         $this->copyOptions($newFormElement, $originalFormElement);
-
-        $originalProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($originalFormElement->getIdentifier());
-        $newProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($newIdentifier);
-
-        $newProcessingRule->injectPropertyMappingConfiguration($originalProcessingRule->getPropertyMappingConfiguration());
-        try {
-            $newProcessingRule->setDataType($originalProcessingRule->getDataType());
-        } catch (\TypeError $error) {
-        }
+        $this->copyProcessingRule($originalFormElement->getIdentifier(), $newIdentifier);
 
         foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['afterBuildingFinished'] ?? [] as $className) {
             $hookObj = GeneralUtility::makeInstance($className);
