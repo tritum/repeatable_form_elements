@@ -1,0 +1,5 @@
+page {
+    includeJSFooter {
+        1511193639 = EXT:repeatable_form_elements/Resources/Public/JavaScript/Form/Frontend/RepeatableContainer.bundle.js
+    }
+}

@@ -24,3 +24,8 @@ TYPO3:
                 maximumCopies: 10
                 showRemoveButton: true
                 elementClassAttribute: 'repeatable-container'
+
+            RepeatableRow:
+              __inheritances:
+                10: 'TYPO3.CMS.Form.prototypes.standard.formElementsDefinition.Fieldset'
+              implementationClassName: 'TRITUM\RepeatableFormElements\FormElements\RepeatableRow'

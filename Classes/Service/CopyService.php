@@ -1,5 +1,7 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
+
 namespace TRITUM\RepeatableFormElements\Service;
 
 /**
@@ -8,14 +10,18 @@ namespace TRITUM\RepeatableFormElements\Service;
  * For the full copyright and license information, please read the
  * LICENSE.txt file that was distributed with this source code.
  */
-use TRITUM\RepeatableFormElements\FormElements\RepeatableContainerInterface;
+
+use TRITUM\RepeatableFormElements\FormElements\RepeatableContainer;
+use TRITUM\RepeatableFormElements\FormElements\RepeatableRow;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Error\Error;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
 use TYPO3\CMS\Form\Domain\Model\FormElements\FormElementInterface;
+use TYPO3\CMS\Form\Domain\Model\Renderable\AbstractRenderable;
 use TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface;
+use TYPO3\CMS\Form\Domain\Model\Renderable\RenderableInterface;
 use TYPO3\CMS\Form\Domain\Runtime\FormRuntime;
 use TYPO3\CMS\Form\Domain\Runtime\FormState;
 use TYPO3\CMS\Form\Service\TranslationService;
@@ -47,6 +53,8 @@ class CopyService
      */
     protected $typeDefinitions = [];
 
+    protected static array $rowMap = [];
+
     /**
      * @param FormRuntime $formRuntime
      */
@@ -72,6 +80,7 @@ class CopyService
         );
 
         $this->copyRepeatableContainersFromArguments($requestArguments);
+
         return $this;
     }
 
@@ -82,6 +91,7 @@ class CopyService
     public function createCopiesFromFormState(): CopyService
     {
         $this->copyRepeatableContainersFromArguments($this->formState->getFormValues());
+
         return $this;
     }
 
@@ -95,50 +105,40 @@ class CopyService
     ): void {
         foreach ($requestArguments as $argumentKey => $argumentValue) {
             if (is_array($argumentValue)) {
-                $originalContainer = $this->getRepeatableContainerByOriginalIdentifier((string)$argumentKey);
+                $repeatableContainer = $this->getRepeatableContainerByOriginalIdentifier((string)$argumentKey);
                 $copyIndexes = array_keys($argumentValue);
+                $originalIndex = $copyIndexes[0];
                 unset($copyIndexes[0]);
                 $argumentPath[] = $argumentKey;
 
                 if (
-                    $originalContainer
+                    $repeatableContainer
                     && count(array_filter(array_keys($copyIndexes), 'is_string')) === 0
                 ) {
+                    /** @var RepeatableRow $originalRow */
+                    $originalRow = $repeatableContainer->getElements()[0];
+                    $originalRow->setRenderingOption('_rowNumber', $originalIndex);
+                    $originalRow->setIdentifier($repeatableContainer->getIdentifier() . '.' . $originalIndex);
                     $copyIndexes = ArrayUtility::sortArrayWithIntegerKeys($copyIndexes);
+                    $minimumCopies = (int)$repeatableContainer->getProperties()['minimumCopies'];
+                    $maximumCopies = (int)$repeatableContainer->getProperties()['maximumCopies'];
 
-                    if (count($argumentPath) <= 1) {
-                        $referenceContainer = $originalContainer;
-                    } else {
-                        $referenceContainerPath = $argumentPath;
-                        $referenceContainerPath[] = 0;
-                        $referenceContainerIdentifier = implode('.', $referenceContainerPath);
-                        $referenceContainer = $this->formDefinition->getElementByIdentifier($referenceContainerIdentifier);
-                    }
-
-                    $firstReferenceContainer = $referenceContainer;
-                    $firstReferenceContainer->setRenderingOption('_isReferenceContainer', true);
-                    $firstReferenceContainer->setRenderingOption('_copyMother', $originalContainer->getIdentifier());
-
-                    $minimumCopies = (int)$firstReferenceContainer->getProperties()['minimumCopies'];
-                    $maximumCopies = (int)$firstReferenceContainer->getProperties()['maximumCopies'];
-
-                    $copyNumber = 1;
+                    $moveAfter = $originalRow;
                     foreach ($copyIndexes as $copyIndex) {
                         $contextPath = $argumentPath;
                         $contextPath[] = $copyIndex;
-                        $newIdentifier = implode('.', $contextPath);
 
-                        $referenceContainer = $this->copyRepeatableContainer($originalContainer, $referenceContainer, $newIdentifier);
-                        $referenceContainer->setRenderingOption('_copyReference', $firstReferenceContainer->getIdentifier());
-
-                        if ($copyNumber > $maximumCopies) {
-                            $this->addError($referenceContainer, 1518701681, 'The maximum number of copies has been reached');
-                        }
-                        $copyNumber++;
+                        $copiedRow = $this->copyRow($originalRow, $moveAfter, $contextPath);
+                        $moveAfter = $copiedRow;
                     }
 
-                    if ($copyNumber - 1 < $minimumCopies) {
-                        $this->addError($firstReferenceContainer, 1518701682, 'The minimum number of copies has not yet been reached');
+                    $totalRows = count($repeatableContainer->getElements());
+                    if ($totalRows > $maximumCopies) {
+                        $this->addError($repeatableContainer, 1518701681, sprintf('The maximum number of rows of %d has been reached. You have %d.', $maximumCopies, count($repeatableContainer->getElements())), ['maximum' => $maximumCopies, 'total' => $totalRows]);
+                    }
+
+                    if ($totalRows < $minimumCopies) {
+                        $this->addError($repeatableContainer, 1518701682, sprintf('The minimum number of rows of %d has not yet been reached. You have %d.', $minimumCopies, $totalRows), ['minimum' => $minimumCopies, 'total' => $totalRows]);
                     }
                 }
 
@@ -149,47 +149,46 @@ class CopyService
     }
 
     /**
-     * @param RepeatableContainerInterface $originalContainer
-     * @param RepeatableContainerInterface $moveAfterContainer
-     * @param string $newIdentifier
-     * @return RepeatableContainerInterface
+     * @param RepeatableRow $copyFromRow
+     * @param RepeatableRow $moveAfterRow
+     * @param array         $contextPath
+     *
+     * @return FormElementInterface
      */
-    protected function copyRepeatableContainer(
-        RepeatableContainerInterface $copyFromContainer,
-        RepeatableContainerInterface $moveAfterContainer,
-        string $newIdentifier
-    ): RepeatableContainerInterface {
-        $typeName = $copyFromContainer->getType();
-        $implementationClassName = $this->typeDefinitions[$typeName]['implementationClassName'];
-        $parentRenderableForNewContainer = $moveAfterContainer->getParentRenderable();
-
-        $newContainer = $this->getObjectManager()->get($implementationClassName, $newIdentifier, $typeName);
-        $this->copyOptions($newContainer, $copyFromContainer);
-
-        $parentRenderableForNewContainer->addElement($newContainer);
-        $parentRenderableForNewContainer->moveElementAfter($newContainer, $moveAfterContainer);
+    protected function copyRow(RepeatableRow $copyFromRow, RepeatableRow $moveAfterRow, array $contextPath): FormElementInterface
+    {
+        /** @var CompositeRenderableInterface $container */
+        $container = $copyFromRow->getParentRenderable();
+        /** @var AbstractRenderable|FormElementInterface $newRow */
+        $newRow = $container->createElement(self::buildRowIdentifier($copyFromRow->getParentRenderable()), $copyFromRow->getType());
+        $this->copyOptions($newRow, $copyFromRow);
+        $newRow->getParentRenderable()->moveElementAfter($newRow, $moveAfterRow);
+        $newRow->setRenderingOption('_rowNumber', $contextPath[count($contextPath) - 1]);
+        $newRow->setRenderingOption('_originalIdentifier', $copyFromRow->getIdentifier());
 
         foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['afterBuildingFinished'] ?? [] as $className) {
             $hookObj = GeneralUtility::makeInstance($className);
             if (method_exists($hookObj, 'afterBuildingFinished')) {
-                $hookObj->afterBuildingFinished($newContainer);
+                $hookObj->afterBuildingFinished($newRow);
             }
         }
 
-        foreach ($copyFromContainer->getElements() as $originalFormElement) {
-            $this->createNestedElements($originalFormElement, $newContainer, $copyFromContainer->getIdentifier(), $newIdentifier);
+        foreach ($copyFromRow->getElements() as $childToCopy) {
+            /** @var CompositeRenderableInterface $newRow */
+            /** @var AbstractRenderable $childToCopy */
+            $this->createNestedElements($newRow, $childToCopy);
         }
 
-        return $newContainer;
+        return $newRow;
     }
 
     /**
-     * @param FormElementInterface $newElementCopy
-     * @param FormElementInterface $originalFormElement
+     * @param RenderableInterface $newElementCopy
+     * @param RenderableInterface $originalFormElement
      */
     protected function copyOptions(
-        FormElementInterface $newElementCopy,
-        FormElementInterface $originalFormElement
+        RenderableInterface $newElementCopy,
+        RenderableInterface $originalFormElement
     ): void {
         $newElementCopy->setLabel($originalFormElement->getLabel());
         $newElementCopy->setDefaultValue($originalFormElement->getDefaultValue());
@@ -222,32 +221,15 @@ class CopyService
     }
 
     /**
-     * @param FormElementInterface $originalFormElement
-     * @param CompositeRenderableInterface $parentFormElement
-     * @param string $identifierOriginal
-     * @param string $identifierReplacement
+     * @param CompositeRenderableInterface $parentFormElementCopy
+     * @param AbstractRenderable           $originalFormElement
      */
-    protected function createNestedElements(
-        FormElementInterface $originalFormElement,
-        CompositeRenderableInterface $parentFormElementCopy,
-        string $identifierOriginal,
-        string $identifierReplacement
-    ): void {
-        $newIdentifier = str_replace($identifierOriginal, $identifierReplacement, $originalFormElement->getIdentifier());
-        $newFormElement = $parentFormElementCopy->createElement(
-            $newIdentifier,
-            $originalFormElement->getType()
-        );
+    protected function createNestedElements(CompositeRenderableInterface $parentFormElementCopy, AbstractRenderable $originalFormElement): void
+    {
+        $newFormElement = $parentFormElementCopy->createElement(bin2hex(random_bytes(12)), $originalFormElement->getType());
+        $newFormElement->setIdentifier(self::buildIdentifierForNestedFields($newFormElement, $originalFormElement->getIdentifier()));
         $this->copyOptions($newFormElement, $originalFormElement);
-
-        $originalProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($originalFormElement->getIdentifier());
-        $newProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($newIdentifier);
-
-        $newProcessingRule->injectPropertyMappingConfiguration($originalProcessingRule->getPropertyMappingConfiguration());
-        try {
-            $newProcessingRule->setDataType($originalProcessingRule->getDataType());
-        } catch (\TypeError $error) {
-        }
+        $newFormElement->setRenderingOption('_originalIdentifier', $originalFormElement->getIdentifier());
 
         foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['afterBuildingFinished'] ?? [] as $className) {
             $hookObj = GeneralUtility::makeInstance($className);
@@ -258,28 +240,57 @@ class CopyService
 
         if ($originalFormElement instanceof CompositeRenderableInterface) {
             foreach ($originalFormElement->getElements() as $originalChildFormElement) {
-                $this->createNestedElements($originalChildFormElement, $newFormElement, $identifierOriginal, $identifierReplacement);
+                $this->createNestedElements($newFormElement, $originalChildFormElement);
             }
         }
     }
 
+    public static function buildIdentifierForNestedFields(RenderableInterface $renderable, string $overrideCurrentIdentifier = null)
+    {
+        $identifierParts = [$overrideCurrentIdentifier ?? $renderable->getIdentifier()];
+        $currentRenderable = $renderable;
+
+        do {
+            $currentRenderable = $currentRenderable->getParentRenderable();
+            if ($currentRenderable instanceof RepeatableRow) {
+                array_unshift($identifierParts, $currentRenderable->getRenderingOptions()['_rowNumber']);
+            } elseif ($currentRenderable instanceof RepeatableContainer) {
+                array_unshift($identifierParts, $currentRenderable->getIdentifier());
+            }
+        } while ($currentRenderable->getParentRenderable() !== null);
+
+        return implode('.', $identifierParts);
+    }
+
+    public static function buildRowIdentifier(RenderableInterface $repeatableContainer)
+    {
+        $base = 'repeatablerow';
+        $counter = 0;
+
+        do {
+            $identifier = $base . '-' . $counter;
+            if (!array_key_exists($identifier, self::$rowMap[$repeatableContainer->getRootForm()->getIdentifier()] ?? [])) {
+                self::$rowMap[$repeatableContainer->getRootForm()->getIdentifier()][$identifier] = true;
+
+                return $identifier;
+            }
+            $counter++;
+        } while (true);
+    }
+
     /**
      * @param string $originalIdentifier
-     * @return RepeatableContainerInterface|null
+     *
+     * @return RepeatableContainer|null
      */
-    protected function getRepeatableContainerByOriginalIdentifier(string $originalIdentifier): ?RepeatableContainerInterface
+    protected function getRepeatableContainerByOriginalIdentifier(string $originalIdentifier): ?RepeatableContainer
     {
         if (
             !isset($this->repeatableContainersByOriginalIdentifier[$originalIdentifier])
             || $this->repeatableContainersByOriginalIdentifier[$originalIdentifier] === null
         ) {
             foreach ($this->formDefinition->getRenderablesRecursively() as $formElement) {
-                $renderingOptions = $formElement->getRenderingOptions();
-                if (
-                    $formElement instanceof RepeatableContainerInterface
-                    && $renderingOptions['_originalIdentifier'] === $originalIdentifier
-                    && (bool)$renderingOptions['_isRootRepeatableContainer'] === true
-                ) {
+                if ($formElement instanceof RepeatableContainer && $formElement->getIdentifier() === $originalIdentifier) {
                     $this->repeatableContainersByOriginalIdentifier[$originalIdentifier] = $formElement;
                 }
             }
@@ -293,20 +304,21 @@ class CopyService
 
     /**
      * @param FormElementInterface $originalFormElement
-     * @param int $timestamp
-     * @param string $defaultMessage
+     * @param int                  $timestamp
+     * @param string               $defaultMessage
      */
     protected function addError(
         FormElementInterface $formElement,
         int $timestamp,
-        string $defaultMessage = ''
+        string $defaultMessage = '',
+        array $messageArguments = []
     ): void {
         $error = $this->getObjectManager()->get(
             Error::class,
             TranslationService::getInstance()->translateFormElementError(
                 $formElement,
                 $timestamp,
-                [],
+                $messageArguments,
                 $defaultMessage,
                 $this->formRuntime
             ),
@@ -340,7 +352,7 @@ class CopyService
                     $formValue = $this->formState->getFormValue($currentArgumentPath);
                     if ($formValue !== null) {
                         foreach ($formValue as $key => $_) {
-                            if (!in_array($key, $copyIndexes)) {
+                            if (!in_array($key, $copyIndexes, true)) {
                                 unset($formValue[$key]);
                             }
                         }
