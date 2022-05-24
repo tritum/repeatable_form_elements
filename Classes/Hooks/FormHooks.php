@@ -42,6 +42,7 @@ class FormHooks
         if (!$lastPage) {
             foreach($formRuntime->getPages() as $page) {
                 foreach($page->getElementsRecursively() as $formElement) {
+                    $formElement->setRenderingOption('_originalIdentifier', $formElement->getIdentifier());
                     $formElement->setIdentifier($this->buildIdentifierForNestedFields($formElement));
                 }
             }
@@ -57,6 +58,7 @@ class FormHooks
 
         foreach($formRuntime->getPages() as $page) {
             foreach($page->getElementsRecursively() as $formElement) {
+                $formElement->setRenderingOption('_originalIdentifier', $formElement->getRenderingOptions()['_originalIdentifier'] ?? $formElement->getIdentifier());
                 $formElement->setIdentifier($this->buildIdentifierForNestedFields($formElement));
             }
         }
