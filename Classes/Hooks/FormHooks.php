@@ -12,6 +12,7 @@ use TRITUM\RepeatableFormElements\FormElements\RepeatableContainerInterface;
 use TRITUM\RepeatableFormElements\Service\CopyService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
+use TYPO3\CMS\Extbase\Validation\Validator\ValidatorInterface;
 use TYPO3\CMS\Form\Domain\Model\FormElements\AbstractFormElement;
 use TYPO3\CMS\Form\Domain\Model\FormElements\FormElementInterface;
 use TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface;
@@ -109,15 +110,10 @@ class FormHooks
             $renderable->setIdentifier($newIdentifier);
             $formRuntime->getFormDefinition()->registerRenderable($renderable);
 
-            $originalProcessingRule = $formRuntime->getFormDefinition()->getProcessingRule($originalIdentifier);
-            $newProcessingRule = $formRuntime->getFormDefinition()->getProcessingRule($newIdentifier);
+            $copyService = $this->getObjectManager()->get(CopyService::class, $formRuntime);
+            [$originalProcessingRule] = $copyService->copyProcessingRule($originalIdentifier, $newIdentifier);
 
-            $newProcessingRule->injectPropertyMappingConfiguration($originalProcessingRule->getPropertyMappingConfiguration());
-            try {
-                $newProcessingRule->setDataType($originalProcessingRule->getDataType());
-            } catch (\TypeError $error) {
-            }
-
+            /** @var ValidatorInterface $validator */
             foreach ($originalProcessingRule->getValidators() as $validator) {
                 $renderable->addValidator($validator);
             }
