@@ -9,10 +9,10 @@ $EM_CONF['repeatable_form_elements'] = [
     'clearCacheOnLoad' => 0,
     'author' => 'Ralf Zimmermann TRITUM GmbH',
     'author_email' => 'ralf.zimmermann@tritum.de',
-    'version' => '2.0.2',
+    'version' => '3.0.0',
     'constraints' => [
         'depends' => [
-            'typo3' => '9.5.25-11.99.99',
+            'typo3' => '11.5.13-11.99.99',
         ],
         'conflicts' => [],
         'suggests' => [],
