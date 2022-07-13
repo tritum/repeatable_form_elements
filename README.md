@@ -10,7 +10,7 @@ finishers will be aware of the copied field(s).
 Copy the extension folder to `\typo3conf\ext\ `, upload it via the extension
 manager or add it to your composer.json. Add the static TypoScript configuration
 to your TypoScript template. Make sure, jQuery is available in the frontend.
-We have tested with TYPO3 v8 and v9 and jQuery v2.2.4.
+We have tested with TYPO3 v11 and jQuery v2.2.4.
 
 ## Usage
 
@@ -36,3 +36,5 @@ This TYPO3 extension was created by Ralf Zimmermann (https://www.tritum.de).
 
 Nora Winter - "Faktenkopf" at www.faktenhaus.de - sponsored this great extension.
 The fine people at www.b13.de connected all the people involved.
+
+Elias Häußler - haeussler.dev - for helping with TYPO3v11 compatability.
