@@ -3,9 +3,9 @@
     "description": "",
     "type": "typo3-cms-extension",
     "require": {
-        "typo3/cms-core": "11.5.13",
-        "typo3/cms-extbase": "^11.5.13",
-        "typo3/cms-form": "^11.5.13"
+        "typo3/cms-core": "~11.5.13",
+        "typo3/cms-extbase": "~11.5.13",
+        "typo3/cms-form": "~11.5.13"
     },
     "extra": {
         "typo3/cms": {
@@ -18,7 +18,7 @@
     "license": "GPL-2.0+",
     "authors": [
         {
-            "name": "Ralf Zimemrmann TRITUM GmbH",
+            "name": "Ralf Zimmermann TRITUM GmbH",
             "email": "ralf.zimmermann@tritum.de"
         }
     ],
