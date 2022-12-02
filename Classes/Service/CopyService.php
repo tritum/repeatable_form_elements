@@ -296,7 +296,7 @@ class CopyService
                 $renderingOptions = $formElement->getRenderingOptions();
                 if (
                     $formElement instanceof RepeatableContainerInterface
-                    && $renderingOptions['_originalIdentifier'] === $originalIdentifier
+                    && ($renderingOptions['_originalIdentifier'] ?? null) === $originalIdentifier
                     && (bool)$renderingOptions['_isRootRepeatableContainer'] === true
                 ) {
                     $this->repeatableContainersByOriginalIdentifier[$originalIdentifier] = $formElement;
