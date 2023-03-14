@@ -7,10 +7,10 @@ $EM_CONF['repeatable_form_elements'] = [
     'clearCacheOnLoad' => 0,
     'author' => 'Ralf Zimmermann, Elias Häußler',
     'author_email' => 'ralf.zimmermann@tritum.de, elias@haeussler.dev',
-    'version' => '3.1.0',
+    'version' => '3.1.1',
     'constraints' => [
         'depends' => [
-            'typo3' => '11.5.13-11.99.99',
+            'typo3' => '11.5.23-11.99.99',
         ],
         'conflicts' => [],
         'suggests' => [],
