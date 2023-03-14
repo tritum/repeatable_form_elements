@@ -53,7 +53,7 @@ $(document).on('initialize-repeatable-container-copy-buttons', function(event, c
             $('[id]', $subject).each(function(e) {
                 var $element = $(this),
                     id = $element.attr('id'),
-                    newId = Math.floor(Math.random() * 42) + Date.now();
+                    newId = Math.floor(Math.random() * 99999999) + Date.now();
 
                 $element.attr('id', newId);
                 idReplacements[id] = newId;
