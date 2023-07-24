@@ -1,3 +1,10 @@
+<!-- Generated with 🧡 at typo3-badges.dev -->
+![TYPO3 extension](https://typo3-badges.dev/badge/repeatable_form_elements/extension/shields.svg)
+![Total downloads](https://typo3-badges.dev/badge/repeatable_form_elements/downloads/shields.svg)
+![Stability](https://typo3-badges.dev/badge/repeatable_form_elements/stability/shields.svg)
+![TYPO3 versions](https://typo3-badges.dev/badge/repeatable_form_elements/typo3/shields.svg)
+![Latest version](https://typo3-badges.dev/badge/repeatable_form_elements/version/shields.svg)
+
 # Custom form element "Repeatable container"
 
 This TYPO3 extension adds a custom form element "Repeatable container" to the
@@ -23,11 +30,6 @@ Add the desired fields with the favored validators to the "Repeatable container"
 The frontend will render the "Repeatable container" as fieldset. In addition to the
 included form elements it will display buttons for copying/ removing new sets of fields.
 
-## State of development
-
-This extension is still in beta phase. Right now, a bunch of people are testing the
-implementation. Some parts still need some love. Do not use in production right now.
-
 ## Credits
 
 This TYPO3 extension was created by Ralf Zimmermann (https://www.tritum.de).
@@ -37,4 +39,5 @@ This TYPO3 extension was created by Ralf Zimmermann (https://www.tritum.de).
 Nora Winter - "Faktenkopf" at www.faktenhaus.de - sponsored this great extension.
 The fine people at www.b13.de connected all the people involved.
 
-Elias Häußler - haeussler.dev - for helping with TYPO3v11 compatability.
+Elias Häußler - haeussler.dev - for helping with TYPO3v11 compatability and providing
+the beautiful [TYPO3 badges](https://typo3-badges.dev). Use them. Give him some kudos!
