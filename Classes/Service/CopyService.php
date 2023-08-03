@@ -104,7 +104,7 @@ class CopyService
 
         if ($typo3Version->getVersion() >= 11) {
             GeneralUtility::addInstance(PropertyMappingConfiguration::class, $originalProcessingRule->getPropertyMappingConfiguration());
-            $newProcessingRule = GeneralUtility::makeInstance(ProcessingRule::class);
+            $newProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($newElementCopy);
         } else {
             $newProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($newElementCopy);
             $newProcessingRule->injectPropertyMappingConfiguration($originalProcessingRule->getPropertyMappingConfiguration());
