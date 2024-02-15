@@ -13,10 +13,13 @@ namespace TRITUM\RepeatableFormElements\Service;
 
 use TRITUM\RepeatableFormElements\FormElements\RepeatableContainer;
 use TRITUM\RepeatableFormElements\FormElements\RepeatableRow;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Error\Error;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
+use TYPO3\CMS\Extbase\Property\PropertyMappingConfiguration;
+use TYPO3\CMS\Extbase\Validation\Validator\ValidatorInterface;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
 use TYPO3\CMS\Form\Domain\Model\FormElements\FormElementInterface;
 use TYPO3\CMS\Form\Domain\Model\Renderable\AbstractRenderable;
@@ -24,6 +27,7 @@ use TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface;
 use TYPO3\CMS\Form\Domain\Model\Renderable\RenderableInterface;
 use TYPO3\CMS\Form\Domain\Runtime\FormRuntime;
 use TYPO3\CMS\Form\Domain\Runtime\FormState;
+use TYPO3\CMS\Form\Mvc\ProcessingRule;
 use TYPO3\CMS\Form\Service\TranslationService;
 
 class CopyService
@@ -93,6 +97,35 @@ class CopyService
         $this->copyRepeatableContainersFromArguments($this->formState->getFormValues());
 
         return $this;
+    }
+
+    /**
+     * @param string $originalFormElement
+     * @param string $newElementCopy
+     * @return ProcessingRule[]
+     * @internal
+     */
+    public function copyProcessingRule(
+        string $originalFormElement,
+        string $newElementCopy
+    ): array {
+        $typo3Version = new Typo3Version();
+        $originalProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($originalFormElement);
+
+        if ($typo3Version->getVersion() >= 11) {
+            GeneralUtility::addInstance(PropertyMappingConfiguration::class, $originalProcessingRule->getPropertyMappingConfiguration());
+            $newProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($newElementCopy);
+        } else {
+            $newProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($newElementCopy);
+            $newProcessingRule->injectPropertyMappingConfiguration($originalProcessingRule->getPropertyMappingConfiguration());
+        }
+
+        try {
+            $newProcessingRule->setDataType($originalProcessingRule->getDataType());
+        } catch (\TypeError $error) {
+        }
+
+        return [$originalProcessingRule, $newProcessingRule];
     }
 
     /**
@@ -206,15 +239,9 @@ class CopyService
             $newElementCopy->setRenderingOption($key, $value);
         }
 
-        $originalProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($originalFormElement->getIdentifier());
-        $newProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($newElementCopy->getIdentifier());
+        [$originalProcessingRule] = $this->copyProcessingRule($originalFormElement->getIdentifier(), $newElementCopy->getIdentifier());
 
-        $newProcessingRule->injectPropertyMappingConfiguration($originalProcessingRule->getPropertyMappingConfiguration());
-        try {
-            $newProcessingRule->setDataType($originalProcessingRule->getDataType());
-        } catch (\TypeError $error) {
-        }
-
+        /** @var ValidatorInterface $validator */
         foreach ($originalProcessingRule->getValidators() as $validator) {
             $newElementCopy->addValidator($validator);
         }
@@ -229,6 +256,7 @@ class CopyService
         $newFormElement = $parentFormElementCopy->createElement(bin2hex(random_bytes(12)), $originalFormElement->getType());
         $newFormElement->setIdentifier(self::buildIdentifierForNestedFields($newFormElement, $originalFormElement->getIdentifier()));
         $this->copyOptions($newFormElement, $originalFormElement);
+        $this->copyProcessingRule($originalFormElement->getIdentifier(), $newFormElement->getIdentifier());
         $newFormElement->setRenderingOption('_originalIdentifier', $originalFormElement->getIdentifier());
 
         foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['afterBuildingFinished'] ?? [] as $className) {
@@ -290,7 +318,12 @@ class CopyService
             || $this->repeatableContainersByOriginalIdentifier[$originalIdentifier] === null
         ) {
             foreach ($this->formDefinition->getRenderablesRecursively() as $formElement) {
-                if ($formElement instanceof RepeatableContainer && $formElement->getIdentifier() === $originalIdentifier) {
+                $renderingOptions = $formElement->getRenderingOptions();
+                if (
+                    $formElement instanceof RepeatableContainerInterface
+                    && ($renderingOptions['_originalIdentifier'] ?? null) === $originalIdentifier
+                    && (bool)$renderingOptions['_isRootRepeatableContainer'] === true
+                ) {
                     $this->repeatableContainersByOriginalIdentifier[$originalIdentifier] = $formElement;
                 }
             }

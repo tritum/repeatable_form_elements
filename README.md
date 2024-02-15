@@ -1,7 +1,15 @@
+<!-- Generated with 🧡 at typo3-badges.dev -->
+![TYPO3 extension](https://typo3-badges.dev/badge/repeatable_form_elements/extension/shields.svg)
+![Total downloads](https://typo3-badges.dev/badge/repeatable_form_elements/downloads/shields.svg)
+![Stability](https://typo3-badges.dev/badge/repeatable_form_elements/stability/shields.svg)
+![TYPO3 versions](https://typo3-badges.dev/badge/repeatable_form_elements/typo3/shields.svg)
+![Latest version](https://typo3-badges.dev/badge/repeatable_form_elements/version/shields.svg)
+
 # Custom form element "Repeatable container"
 
-This TYPO3 extension adds a custom form element "Repeatable container" to the TYPO3 form framework. It displays one/ a
-set of fields which can be duplicated and removed if desired. Any existing validation is copied as well. All form
+This TYPO3 extension adds a custom form element "Repeatable container" to the
+TYPO3 form framework. It displays one/ a set of fields which can be duplicated
+and removed if desired. Any existing validation is copied as well. All form
 finishers will be aware of the copied field(s).
 
 ## Installation
@@ -48,5 +56,8 @@ This TYPO3 extension was created by Ralf Zimmermann (https://www.tritum.de).
 
 ## Thank you
 
-Nora Winter - "Faktenkopf" at www.faktenhaus.de - sponsored this great extension. The fine people at www.b13.de
-connected all the people involved.
+Nora Winter - "Faktenkopf" at www.faktenhaus.de - sponsored this great extension.
+The fine people at www.b13.de connected all the people involved.
+
+Elias Häußler - haeussler.dev - for helping with TYPO3v11 compatability and providing
+the beautiful [TYPO3 badges](https://typo3-badges.dev). Use them. Give him some kudos!

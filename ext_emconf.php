@@ -1,18 +1,16 @@
 <?php
 $EM_CONF['repeatable_form_elements'] = [
     'title' => 'Repeatable form elements',
-    'description' => 'Adds a new form element which allows the editor to create a new, in the frontend repeatable container for nesting elements.',
-    'category' => '',
+    'description' => 'Adds a new form element which allows the editor to create new container elements with any type fields in them. In the frontend, a user can create any number of new containers. This is an extension for TYPO3 CMS.',
+    'category' => 'fe',
     'state' => 'stable',
-    'uploadfolder' => 0,
-    'createDirs' => '',
     'clearCacheOnLoad' => 0,
-    'author' => 'Ralf Zimmermann TRITUM GmbH',
-    'author_email' => 'ralf.zimmermann@tritum.de',
-    'version' => '3.0.0',
+    'author' => 'Ralf Zimmermann, Elias Häußler',
+    'author_email' => 'ralf.zimmermann@tritum.de, elias@haeussler.dev',
+    'version' => '3.1.1',
     'constraints' => [
         'depends' => [
-            'typo3' => '9.5.25-10.4.99',
+            'typo3' => '11.5.23-11.99.99',
         ],
         'conflicts' => [],
         'suggests' => [],
