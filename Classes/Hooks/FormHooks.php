@@ -90,6 +90,8 @@ class FormHooks
     {
         if ($renderable instanceof RepeatableContainer) {
             $renderable->setRenderingOption('_originalIdentifier', $renderable->getIdentifier());
+            $renderable->setRenderingOption('_isRootRepeatableContainer', true);
+            $renderable->setRenderingOption('_isReferenceContainer', true);
             /** @var RepeatableRow $row */
             $row = $renderable->createElement(CopyService::buildRowIdentifier($renderable), 'RepeatableRow');
             $row->setRenderingOption('_rowNumber', 0);
