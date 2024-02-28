@@ -14,21 +14,41 @@ finishers will be aware of the copied field(s).
 
 ## Installation
 
-Copy the extension folder to `\typo3conf\ext\ `, upload it via the extension
-manager or add it to your composer.json. Add the static TypoScript configuration
-to your TypoScript template. Make sure, jQuery is available in the frontend.
-We have tested with TYPO3 v11 and jQuery v2.2.4.
+Via composer:
+
+```sh
+composer require tritum/repeatable-form-elements
+```
+
+through the extension manager or by manually extracting the extension into `typo3conf/ext `.
+
+Include the typo script templates
+
+* Form setup: Includes the necessary YAML files with the form configuration (mandatory)
+* JavaScript (global): Includes the javascript, which exposes the `RepeatableContainer` to the global namespace
+* JavaScript (bundle): Includes the javascript, which bundle the `RepeatableContainer` class with the necessary
+  initialization
+
+The JavaScript does not depend on any frameworks. It works in modern browser, which **excludes** Internet Explorer.
 
 ## Usage
 
-Open the TYPO3 form editor and create a new form/ open an existing one. Add a
-new element to your form. The modal will list the new custom form element
+Open the TYPO3 form editor and create a new form/ open an existing one. Add a new element to your form. The modal will
+list the new custom form element
 "Repeatable container".
 
 Add the desired fields with the favored validators to the "Repeatable container".
 
-The frontend will render the "Repeatable container" as fieldset. In addition to the
-included form elements it will display buttons for copying/ removing new sets of fields.
+The frontend will render the "Repeatable container" with the configured fields wrapped inside a row, which is the
+repeating element. In addition to the included form elements it will display buttons for adding/removing new sets of
+fields.
+
+## Frontend development & build
+When you want to make changes to the frontend, please go into the `Resources/Private/Frontend` and install the
+necessary node modules by issuing `npm install`. The build it tested with NodeJS 16.
+
+For watcher and continouos build, you can start the Webpack dev server by `npm run dev`. When you want to re-/build
+the final javascript files use `npm run build`.
 
 ## Credits
 

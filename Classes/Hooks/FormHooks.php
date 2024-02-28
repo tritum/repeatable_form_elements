@@ -8,12 +8,11 @@ namespace TRITUM\RepeatableFormElements\Hooks;
  * For the full copyright and license information, please read the
  * LICENSE.txt file that was distributed with this source code.
  */
-use TRITUM\RepeatableFormElements\FormElements\RepeatableContainerInterface;
+
+use TRITUM\RepeatableFormElements\FormElements\RepeatableContainer;
+use TRITUM\RepeatableFormElements\FormElements\RepeatableRow;
 use TRITUM\RepeatableFormElements\Service\CopyService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Object\ObjectManager;
-use TYPO3\CMS\Extbase\Validation\Validator\ValidatorInterface;
-use TYPO3\CMS\Form\Domain\Model\FormElements\AbstractFormElement;
 use TYPO3\CMS\Form\Domain\Model\FormElements\FormElementInterface;
 use TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface;
 use TYPO3\CMS\Form\Domain\Model\Renderable\RenderableInterface;
@@ -36,18 +35,32 @@ class FormHooks
         array $rawRequestArguments = []
     ): ?CompositeRenderableInterface {
         foreach ($formRuntime->getPages() as $page) {
-            $this->setRootRepeatableContainerIdentifiers($page, $formRuntime);
+            $this->wrapChildrenIntoRow($page, $formRuntime);
         }
 
         // first request
         if (!$lastPage) {
+            foreach($formRuntime->getPages() as $page) {
+                foreach($page->getElementsRecursively() as $formElement) {
+                    $formElement->setRenderingOption('_originalIdentifier', $formElement->getIdentifier());
+                    $formElement->setIdentifier($this->buildIdentifierForNestedFields($formElement));
+                }
+            }
+
             return $currentPage;
         }
 
-        if ($this->userWentBackToPreviousStep($formRuntime, $currentPage, $lastPage)) {
-            $this->getObjectManager()->get(CopyService::class, $formRuntime)->createCopiesFromFormState();
+        if ($this->userWentBackToPreviousStep($currentPage, $lastPage)) {
+            GeneralUtility::makeInstance(CopyService::class, $formRuntime)->createCopiesFromFormState();
         } else {
-            $this->getObjectManager()->get(CopyService::class, $formRuntime)->createCopiesFromCurrentRequest();
+            GeneralUtility::makeInstance(CopyService::class, $formRuntime)->createCopiesFromCurrentRequest();
+        }
+
+        foreach($formRuntime->getPages() as $page) {
+            foreach($page->getElementsRecursively() as $formElement) {
+                $formElement->setRenderingOption('_originalIdentifier', $formElement->getRenderingOptions()['_originalIdentifier'] ?? $formElement->getIdentifier());
+                $formElement->setIdentifier($this->buildIdentifierForNestedFields($formElement));
+            }
         }
 
         return $currentPage;
@@ -73,89 +86,84 @@ class FormHooks
         }
     }
 
-    /**
-     * @param RenderableInterface $formElement
-     * @param FormRuntime $formRuntime
-     * @param array $repeatableContainerIdentifiers
-     */
-    protected function setRootRepeatableContainerIdentifiers(
-        RenderableInterface $renderable,
-        FormRuntime $formRuntime,
-        array $repeatableContainerIdentifiers = []
-    ): void {
-        $isRepeatableContainer = $renderable instanceof RepeatableContainerInterface ? true : false;
+    protected function wrapChildrenIntoRow(RenderableInterface $renderable, FormRuntime $formRuntime)
+    {
+        if ($renderable instanceof RepeatableContainer) {
+            $renderable->setRenderingOption('_originalIdentifier', $renderable->getIdentifier());
+            $renderable->setRenderingOption('_isRootRepeatableContainer', true);
+            $renderable->setRenderingOption('_isReferenceContainer', true);
+            /** @var RepeatableRow $row */
+            $row = $renderable->createElement(CopyService::buildRowIdentifier($renderable), 'RepeatableRow');
+            $row->setRenderingOption('_rowNumber', 0);
 
-        $hasOriginalIdentifier = isset($renderable->getRenderingOptions()['_originalIdentifier']);
-        if ($isRepeatableContainer) {
-            $repeatableContainerIdentifiers[] = $renderable->getIdentifier();
-            if (!$hasOriginalIdentifier) {
-                $renderable->setRenderingOption('_isRootRepeatableContainer', true);
-                $renderable->setRenderingOption('_isReferenceContainer', true);
-            }
-        }
-
-        if (!empty($repeatableContainerIdentifiers) && !$hasOriginalIdentifier) {
-            $newIdentifier = implode('.0.', $repeatableContainerIdentifiers) . '.0';
-            if (!$isRepeatableContainer) {
-                $newIdentifier .= '.' . $renderable->getIdentifier();
-            }
-            $originalIdentifier = $renderable->getIdentifier();
-            $renderable->setRenderingOption('_originalIdentifier', $originalIdentifier);
-
-            if($renderable instanceof AbstractFormElement && $renderable->getDefaultValue()) {
-                $formRuntime->getFormDefinition()->addElementDefaultValue($newIdentifier, $renderable->getDefaultValue());
-            }
-
-            $formRuntime->getFormDefinition()->unregisterRenderable($renderable);
-            $renderable->setIdentifier($newIdentifier);
-            $formRuntime->getFormDefinition()->registerRenderable($renderable);
-
-            $copyService = $this->getObjectManager()->get(CopyService::class, $formRuntime);
-            [$originalProcessingRule] = $copyService->copyProcessingRule($originalIdentifier, $newIdentifier);
-
-            /** @var ValidatorInterface $validator */
-            foreach ($originalProcessingRule->getValidators() as $validator) {
-                $renderable->addValidator($validator);
+            /** @var FormElementInterface|RenderableInterface $childElement */
+            foreach($renderable->getElements() as $childElement) {
+                if ($childElement !== $row) {
+                    $renderable->removeElement($childElement);
+                    $row->addElement($childElement);
+                    // Fix the missing parent renderables removed by `removeElement`
+                    $this->updateParentRenderableRecursively($childElement, $formRuntime);
+                }
             }
 
             foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['afterBuildingFinished'] ?? [] as $className) {
                 $hookObj = GeneralUtility::makeInstance($className);
                 if (method_exists($hookObj, 'afterBuildingFinished')) {
-                    $hookObj->afterBuildingFinished($renderable);
+                    $hookObj->afterBuildingFinished($row);
+                }
+            }
+        } elseif ($renderable instanceof CompositeRenderableInterface) {
+            foreach ($renderable->getElements() as $element) {
+                $this->wrapChildrenIntoRow($element, $formRuntime);
+            }
+        }
+    }
+
+    protected function updateParentRenderableRecursively(RenderableInterface $renderable, FormRuntime $formRuntime) {
+        if ($renderable instanceof CompositeRenderableInterface && method_exists($renderable, 'getElements')) {
+            /** @var RenderableInterface $childElement */
+            foreach ($renderable->getElements() as $childElement) {
+                $formRuntime->getFormDefinition()->unregisterRenderable($childElement);
+                $childElement->setParentRenderable($renderable);
+
+                if ($childElement instanceof CompositeRenderableInterface) {
+                    $this->updateParentRenderableRecursively($childElement, $formRuntime);
                 }
             }
         }
+    }
 
-        if ($renderable instanceof CompositeRenderableInterface) {
-            foreach ($renderable->getElements() as $childRenderable) {
-                $this->setRootRepeatableContainerIdentifiers($childRenderable, $formRuntime, $repeatableContainerIdentifiers);
+    protected function buildIdentifierForNestedFields(RenderableInterface $renderable)
+    {
+        $identifierParts = [$renderable->getRenderingOptions()['_rowNumber'] ?? $renderable->getRenderingOptions()['_originalIdentifier'] ?? $renderable->getIdentifier()];
+        $currentRenderable = $renderable;
+
+        do {
+            $currentRenderable = $currentRenderable->getParentRenderable();
+            if ($currentRenderable instanceof RepeatableRow) {
+                array_unshift($identifierParts, $currentRenderable->getRenderingOptions()['_rowNumber']);
+            } elseif ($currentRenderable instanceof RepeatableContainer) {
+                array_unshift($identifierParts, $currentRenderable->getIdentifier());
             }
-        }
+        } while ($currentRenderable->getParentRenderable() !== null);
+
+        return implode('.', $identifierParts);
     }
 
     /**
      * returns TRUE if the user went back to any previous step in the form.
      *
-     * @param FormRuntime $formRuntime
-     * @param CompositeRenderableInterface $currentPage
-     * @param CompositeRenderableInterface $lastPage
+     * @param CompositeRenderableInterface|null $currentPage
+     * @param CompositeRenderableInterface|null $lastPage
+     *
      * @return bool
      */
     protected function userWentBackToPreviousStep(
-        FormRuntime $formRuntime,
         CompositeRenderableInterface $currentPage = null,
         CompositeRenderableInterface $lastPage = null
     ): bool {
         return $currentPage !== null
                 && $lastPage !== null
                 && $currentPage->getIndex() < $lastPage->getIndex();
-    }
-
-    /**
-     * @return ObjectManager
-     */
-    protected function getObjectManager(): ObjectManager
-    {
-        return GeneralUtility::makeInstance(ObjectManager::class);
     }
 }

@@ -1,0 +1,14 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" xmlns:formvh="http://typo3.org/ns/TYPO3/CMS/Form/ViewHelpers" data-namespace-typo3-fluid="true">
+<formvh:renderRenderable renderable="{element}">
+    <div id="{childElement.identifier}" class="form-repeatable-row">
+        <f:if condition="{element.parentRenderable.properties.showRemoveButton}">
+            <button class="btn btn-default btn-sm" type="button" title="{formvh:translateElementProperty(element: element, property: 'removeButtonLabel')}" data-remove-button>
+                <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
+            </button>
+        </f:if>
+        <f:for each="{element.elements}" as="childElement">
+            <f:render partial="{childElement.templateName}" arguments="{element: childElement}" />
+        </f:for>
+    </div>
+</formvh:renderRenderable>
+</html>

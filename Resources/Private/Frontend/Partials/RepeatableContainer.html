@@ -1,31 +1,16 @@
-<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" xmlns:formvh="http://typo3.org/ns/TYPO3/CMS/Form/ViewHelpers" xmlns:rfe="http://typo3.org/ns/TRITUM/RepeatableFormElements/ViewHelpers" data-namespace-typo3-fluid="true">
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" xmlns:formvh="http://typo3.org/ns/TYPO3/CMS/Form/ViewHelpers" data-namespace-typo3-fluid="true">
 <formvh:renderRenderable renderable="{element}">
-    <fieldset data-repeatable-container data-identifier="{element.identifier}"{f:if(condition: '{element.renderingOptions._isRootRepeatableContainer}', then: ' data-is-root data-min-copies="{element.properties.minimumCopies}" data-max-copies="{element.properties.maximumCopies}"', else: ' data-is-copy data-copy-reference="{element.renderingOptions._copyReference}" data-copy-mother="{element.renderingOptions._copyMother}"')}{f:if(condition: '{element.renderingOptions._isReferenceContainer}', then: ' data-min-copies="{element.properties.minimumCopies}" data-max-copies="{element.properties.maximumCopies}"')}>
-        <f:render partial="Field/Field" arguments="{element: element, doNotShowLabel: 1}" contentAs="elementContent">
-            <div class="row">
-                <legend class="control-label" for="{element.uniqueIdentifier}">
-                    {formvh:translateElementProperty(element: element, property: 'label')}
-                        <div class="btn-group" role="group">
-                            <f:if condition="{element.renderingOptions._isReferenceContainer}">
-                                <button class="btn btn-default btn-sm" type="button" title="{formvh:translateElementProperty(element: element, property: 'copyButtonLabel')}" data-repeatable-container data-copy-button data-copy-button-for="{element.identifier}">
-                                    {formvh:translateElementProperty(element: element, property: 'copyButtonLabel')} <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-                                </button>
-                            </f:if>
-                            <f:if condition="{element.properties.showRemoveButton}">
-                                <button class="btn btn-default btn-sm disabled hidden" type="button" title="{formvh:translateElementProperty(element: element, property: 'removeButtonLabel')}" data-repeatable-container data-remove-button data-remove-button-for="{element.identifier}">
-                                    {formvh:translateElementProperty(element: element, property: 'removeButtonLabel')} <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
-                                </button>
-                            </f:if>
-                        </div>
-                </legend>
-            </div>
-
-            <div class="{element.properties.elementClassAttribute}">
+    <div class="form-repeatable-container{f:if(condition: '{validationResults.errors.0}', then: ' has-error')}" data-repeatable-container id="{element.identifier}" data-min-copies="{element.properties.minimumCopies}" data-max-copies="{element.properties.maximumCopies}">
+        <f:render partial="Field/Field" arguments="{element: element}" contentAs="elementContent">
+            <div class="{element.properties.elementClassAttribute}" data-repeatable-root>
                 <f:for each="{element.elements}" as="childElement">
-                    <f:render partial="{childElement.templateName}" arguments="{element: childElement}" />
+                    <f:render partial="{childElement.templateName}" arguments="{element: childElement}"/>
                 </f:for>
             </div>
+            <button class="btn btn-default btn-sm" type="button" title="{formvh:translateElementProperty(element: element, property: 'copyButtonLabel')}" data-copy-button>
+                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {formvh:translateElementProperty(element: element, property: 'copyButtonLabel')}
+            </button>
         </f:render>
-    </fieldset>
+    </div>
 </formvh:renderRenderable>
 </html>
