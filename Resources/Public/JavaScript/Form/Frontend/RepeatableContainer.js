@@ -21,7 +21,7 @@ $(function() {
 
         $containerClone
             .find('input')
-                .filter(':text, :password, :file').attr('value', '').end()
+                .filter(':not(:checkbox, :radio, :hidden)').attr('value', '').end()
                 .filter(':checkbox, :radio').removeAttr('checked').end().end()
             .find('textarea').attr('value', '').end()
             .find('select').prop("selectedIndex", -1).find('option:selected').removeAttr('selected');
