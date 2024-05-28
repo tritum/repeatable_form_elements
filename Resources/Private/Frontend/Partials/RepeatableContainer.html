@@ -12,7 +12,7 @@
                                 </button>
                             </f:if>
                             <f:if condition="{element.properties.showRemoveButton}">
-                                <button class="btn btn-default btn-sm disabled hidden" type="button" title="{formvh:translateElementProperty(element: element, property: 'removeButtonLabel')}" data-repeatable-container data-remove-button data-remove-button-for="{element.identifier}">
+                                <button class="btn btn-default btn-sm" type="button" title="{formvh:translateElementProperty(element: element, property: 'removeButtonLabel')}" data-repeatable-container data-remove-button data-remove-button-for="{element.identifier}" disabled>
                                     {formvh:translateElementProperty(element: element, property: 'removeButtonLabel')} <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
                                 </button>
                             </f:if>
