@@ -1,44 +1,68 @@
-$(function() {
+var ready = (callback) => {
+  if (document.readyState != "loading") callback();
+  else document.addEventListener("DOMContentLoaded", callback);
+}
+ready(() => {
     var containerClones = {};
 
-    $('[data-repeatable-container][data-is-root]').each(function(e) {
-        var $element = $(this),
-            $containerClone = $element.clone(),
-            containerIdentifier = $element.attr('data-identifier'),
-            formIdentifier = $element.closest('form').attr('id');
+    document.querySelectorAll('[data-repeatable-container][data-is-root]').forEach((rootElement) => {
+        let containerClone = rootElement.cloneNode(true),
+            containerIdentifier = rootElement.dataset['identifier'],
+            formIdentifier = rootElement.closest('form').getAttribute('id');
 
         containerClones[formIdentifier] = containerClones[formIdentifier] || {};
 
-        $('[data-repeatable-container][data-is-copy]', $containerClone).remove();
-        $('[data-repeatable-container][data-copy-button]', $containerClone).first().remove();
-        $('[role="alert"]', $containerClone).remove();
+        for (const copyElement of containerClone.querySelectorAll('[data-repeatable-container][data-is-copy]')) {
+            copyElement.remove();
+        }
+        containerClone.querySelector('[data-repeatable-container][data-copy-button]').remove();
+        for (const alertElement of containerClone.querySelectorAll('[role="alert"]')) {
+            alertElement.remove();
+        }
 
-        $('[data-repeatable-container][data-is-root]', $containerClone).each(function(e) {
-            $(this).removeAttr('data-is-root').attr('data-is-copy', '').attr('data-copy-mother', $(this).attr('data-identifier'));
+        containerClone.querySelectorAll('[data-repeatable-container][data-is-root]').forEach((cloneElement) => {
+            delete cloneElement.dataset.isRoot;
+            cloneElement.dataset.isCopy = '';
+            cloneElement.dataset.copyMother = cloneElement.dataset['identifier'];
         });
-        $containerClone.removeAttr('data-is-root').attr('data-is-copy', '');
-        $containerClone.find('*').removeClass('has-error');
+        delete containerClone.dataset.isRoot;
+        containerClone.dataset.isCopy = '';
+        containerClone.querySelectorAll('*').forEach((cloneChildElement) => {
+            cloneChildElement.classList.remove('has-error');
+        });
 
-        $containerClone
-            .find('input')
-                .filter(':text, :password, :file').attr('value', '').end()
-                .filter(':checkbox, :radio').removeAttr('checked').end().end()
-            .find('textarea').attr('value', '').end()
-            .find('select').prop("selectedIndex", -1).find('option:selected').removeAttr('selected');
+        let inputs = [...containerClone.querySelectorAll('input')];
+        inputs.filter((input) => ['checkbox', 'radio', 'hidden'].indexOf(input.getAttribute('type')) == -1).forEach((inputElement) => {
+            inputElement.setAttribute('value', '');
+        });
+        inputs.filter((input) => ['checkbox', 'radio'].indexOf(input.getAttribute('type')) >= 0).forEach((inputElement) => {
+            inputElement.checked = false;
+        });
+        containerClone.querySelectorAll('textarea').forEach((textareaElement) => {
+            textareaElement.setAttribute('value', '');
+        });
+        containerClone.querySelectorAll('select').forEach((selectElement) => {
+            let selected = selectElement.selectedOptions;
+            for (let i = 0; i < selected.length; i++) {
+                selected[i].removeAttribute('selected');
+            }
+            selectElement.selectedIndex = -1;
+        });
 
-        containerClones[formIdentifier][containerIdentifier] = $containerClone;
+        containerClones[formIdentifier][containerIdentifier] = containerClone;
     });
 
-    $(document).trigger('initialize-repeatable-container-copy-buttons', [containerClones]);
-    $(document).trigger('initialize-repeatable-container-remove-buttons');
+    document.dispatchEvent(new CustomEvent('initialize-repeatable-container-copy-buttons', { 'detail': { 'containerClones': containerClones } }));
+    document.dispatchEvent(new CustomEvent('initialize-repeatable-container-remove-buttons'));
 });
 
-$(document).on('initialize-repeatable-container-copy-buttons', function(event, containerClones) {
-    var getNextCopyNumber = function($referenceElement, $form) {
-            var highestCopyNumber = 0;
+document.addEventListener('initialize-repeatable-container-copy-buttons', (copyEvent) => {
+    let containerClones = copyEvent.detail.containerClones,
+        getNextCopyNumber = (referenceElement, formElement) => {
+            let highestCopyNumber = 0;
 
-            $('[data-repeatable-container][data-copy-reference="' + $referenceElement.attr('data-identifier') + '"]', $form).each(function(e) {
-                var copyNumber = parseInt($(this).attr('data-identifier').split('.').pop());
+            formElement.querySelectorAll('[data-repeatable-container][data-copy-reference="' + referenceElement.dataset['identifier'] + '"]').forEach((copyElement) => {
+                let copyNumber = parseInt(copyElement.dataset['identifier'].split('.').pop());
 
                 if (copyNumber > highestCopyNumber) {
                     highestCopyNumber = copyNumber;
@@ -47,155 +71,163 @@ $(document).on('initialize-repeatable-container-copy-buttons', function(event, c
 
             return ++highestCopyNumber;
         },
-        setRandomIds = function($subject) {
-            var idReplacements = {};
+        setRandomIds = (subject) => {
+            let idReplacements = {};
 
-            $('[id]', $subject).each(function(e) {
-                var $element = $(this),
-                    id = $element.attr('id'),
+            subject.querySelectorAll('[id]').forEach((subjectIdElement) => {
+                let id = subjectIdElement.getAttribute('id'),
                     newId = Math.floor(Math.random() * 99999999) + Date.now();
 
-                $element.attr('id', newId);
+                subjectIdElement.setAttribute('id', newId);
                 idReplacements[id] = newId;
             });
 
-            $subject.find('*').each(function(e) {
-                for (var i = 0, len = this.attributes.length; i < len; i++) {
-                    var attributeValue = this.attributes[i].nodeValue;
+            subject.querySelectorAll('*').forEach((subjectChildElement) => {
+                for (let i = 0, len = subjectChildElement.attributes.length; i < len; i++) {
+                    let attributeValue = subjectChildElement.attributes[i].nodeValue;
 
                     if (attributeValue in idReplacements) {
-                        this.attributes[i].nodeValue = idReplacements[attributeValue];
+                        subjectChildElement.attributes[i].nodeValue = idReplacements[attributeValue];
                     }
                 }
             });
         },
-        escapeRegExp = function(subject) {
+        escapeRegExp = (subject) => {
             return subject.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
         };
 
-    $('[data-repeatable-container][data-copy-button]').each(function(e) {
-        var $element = $(this),
-            referenceElementIdentifier = $element.attr('data-copy-button-for'),
-            $referenceElement = $('[data-repeatable-container][data-identifier="' + referenceElementIdentifier + '"]', $form),
-            $form = $element.closest('form'),
-            $elementCopies = $('[data-repeatable-container][data-copy-reference="' + referenceElementIdentifier + '"]', $form),
-            maxCopies = $referenceElement.attr('data-max-copies');
+    document.querySelectorAll('[data-repeatable-container][data-copy-button]').forEach((copyBtnElement) => {
+        let formElement = copyBtnElement.closest('form'),
+            referenceElementIdentifier = copyBtnElement.dataset['copyButtonFor'],
+            referenceElement = formElement.querySelector('[data-repeatable-container][data-identifier="' + referenceElementIdentifier + '"]'),
+            elementCopies = formElement.querySelectorAll('[data-repeatable-container][data-copy-reference="' + referenceElementIdentifier + '"]'),
+            maxCopies = referenceElement.dataset['maxCopies'] || false;
 
-        if ($elementCopies.length >= maxCopies) {
-            $element.attr('disabled', 'disabled');
+        if (maxCopies && elementCopies.length >= maxCopies) {
+            copyBtnElement.disabled = true;
         } else {
-            $element.attr('disabled', null);
-            $element.off().on('click', function(e) {
-                e.preventDefault();
-
-                var $element = $(this),
-                    referenceElementIdentifier = $element.attr('data-copy-button-for'),
-                    $form = $element.closest('form'),
-                    formIdentifier = $form.attr('id'),
-                    $referenceElement = $('[data-repeatable-container][data-identifier="' + referenceElementIdentifier + '"]', $form),
-                    referenceElementIsRoot = $referenceElement.is('[data-is-root]'),
-                    $elementCopies = $('[data-repeatable-container][data-copy-reference="' + referenceElementIdentifier + '"]', $form),
-                    containerCloneIdentifier = referenceElementIsRoot ? referenceElementIdentifier : $referenceElement.attr('data-copy-mother'),
-                    copyMotherIdentifier = containerClones[formIdentifier][containerCloneIdentifier].attr('data-identifier'),
-                    newIdentifierParts = $referenceElement.attr('data-identifier').split('.'),
+            copyBtnElement.disabled = false;
+            /* clone element to remove all event listeners */
+            let copyBtnElementClone = copyBtnElement.cloneNode(true);
+            copyBtnElement.replaceWith(copyBtnElementClone);
+            copyBtnElementClone.addEventListener('click', (clickEvent) => {
+                clickEvent.preventDefault();
+                let clickElement = clickEvent.currentTarget,
+                    clickFormElement = clickElement.closest('form'),
+                    referenceElementIdentifier = clickElement.dataset['copyButtonFor'],
+                    formIdentifier = clickFormElement.getAttribute('id'),
+                    referenceElement = clickFormElement.querySelector('[data-repeatable-container][data-identifier="' + referenceElementIdentifier + '"]'),
+                    referenceElementIsRoot = 'isRoot' in referenceElement.dataset,
+                    elementCopies = clickFormElement.querySelectorAll('[data-repeatable-container][data-copy-reference="' + referenceElementIdentifier + '"]'),
+                    containerCloneIdentifier = referenceElementIsRoot ? referenceElementIdentifier : referenceElement.dataset['copyMother'],
+                    copyMotherIdentifier = containerClones[formIdentifier][containerCloneIdentifier].dataset['identifier'],
+                    newIdentifierParts = referenceElement.dataset['identifier'].split('.'),
                     oldIdentifierNameRegex = escapeRegExp('[' + copyMotherIdentifier.split('.').join('][') + ']'),
                     copyMotherIdentifierRegex = '(' + escapeRegExp('data-copy-mother="') + ')?' + escapeRegExp(copyMotherIdentifier),
                     newIdentifier = undefined,
                     newIdentifierNameRegex = undefined,
-                    $containerClone = undefined,
+                    containerClone = undefined,
                     containerCloneHtml = undefined;
 
                 newIdentifierParts.pop();
-                newIdentifierParts.push(getNextCopyNumber($referenceElement, $form));
+                newIdentifierParts.push(getNextCopyNumber(referenceElement, clickFormElement));
                 newIdentifier = newIdentifierParts.join('.');
 
-                containerCloneHtml = containerClones[formIdentifier][containerCloneIdentifier][0].outerHTML;
+                containerCloneHtml = containerClones[formIdentifier][containerCloneIdentifier].outerHTML;
                 // leading, negative lookbehind ("?<!")
-                containerCloneHtml = containerCloneHtml.replace(new RegExp(copyMotherIdentifierRegex, 'g'), function($0, $1) {
+                containerCloneHtml = containerCloneHtml.replace(new RegExp(copyMotherIdentifierRegex, 'g'), ($0, $1) => {
                     return $1 ? $0 : newIdentifier;
                 });
 
                 newIdentifierNameRegex = '[' + newIdentifierParts.join('][') + ']';
                 containerCloneHtml = containerCloneHtml.replace(new RegExp(oldIdentifierNameRegex, 'g'), newIdentifierNameRegex);
 
-                $containerClone = $(containerCloneHtml);
-                $containerClone.attr('data-copy-reference', referenceElementIdentifier);
+                let containerCloneWrap = document.createElement('div');
+                containerCloneWrap.innerHTML = containerCloneHtml;
+                containerClone = containerCloneWrap.firstChild;
+                containerClone.dataset.copyReference = referenceElementIdentifier;
 
-                containerCloneHtml = $containerClone[0].outerHTML;
+                setRandomIds(containerClone);
 
-                setRandomIds($containerClone);
-
-                if ($elementCopies.length === 0) {
-                    $referenceElement.after($containerClone);
+                if (elementCopies.length === 0) {
+                    referenceElement.after(containerClone);
                 } else {
-                    $elementCopies.last().after($containerClone);
+                    [...elementCopies].at(-1).after(containerClone);
                 }
 
-                $(document).trigger('after-element-copy', [$containerClone]);
-                $(document).trigger('initialize-repeatable-container-copy-buttons', [containerClones]);
-                $(document).trigger('initialize-repeatable-container-remove-buttons');
+                // document.dispatchEvent(new CustomEvent('after-element-copy', { 'detail': { 'containerClone': containerClone } }));
+                document.dispatchEvent(new CustomEvent('initialize-repeatable-container-copy-buttons', { 'detail': { 'containerClones': containerClones } }));
+                document.dispatchEvent(new CustomEvent('initialize-repeatable-container-remove-buttons'));
             });
         }
     });
 });
 
-$(document).on('initialize-repeatable-container-remove-buttons', function(event) {
-    $('[data-repeatable-container][data-remove-button]').each(function(e) {
-        var $element = $(this),
-            referenceElementIdentifier = $element.attr('data-remove-button-for'),
-            $form = $element.closest('form'),
-            $referenceElement = $('[data-repeatable-container][data-identifier="' + referenceElementIdentifier + '"]', $form),
-            referenceElementIsRoot = $referenceElement.is('[data-is-root]'),
-            referenceReferenceElementIdentifier = referenceElementIsRoot ? referenceElementIdentifier : $referenceElement.attr('data-copy-reference'),
-            $referenceReferenceElement = $('[data-repeatable-container][data-identifier="' + referenceReferenceElementIdentifier + '"]', $form),
-            $elementCopies = $('[data-repeatable-container][data-copy-reference="' + referenceReferenceElementIdentifier + '"]', $form),
-            minCopies = $referenceReferenceElement.attr('data-min-copies');
+document.addEventListener('initialize-repeatable-container-remove-buttons', (removeEvent) => {
+    document.querySelectorAll('[data-repeatable-container][data-remove-button]').forEach((removeBtnElement) => {
+        let formElement = removeBtnElement.closest('form'),
+            referenceElementIdentifier = removeBtnElement.dataset['removeButtonFor'],
+            referenceElement = formElement.querySelector('[data-repeatable-container][data-identifier="' + referenceElementIdentifier + '"]'),
+            referenceElementIsRoot = 'isRoot' in referenceElement.dataset,
+            referenceReferenceElementIdentifier = referenceElementIsRoot ? referenceElementIdentifier : referenceElement.dataset['copyReference'],
+            referenceReferenceElement = formElement.querySelector('[data-repeatable-container][data-identifier="' + referenceReferenceElementIdentifier + '"]'),
+            elementCopies = formElement.querySelectorAll('[data-repeatable-container][data-copy-reference="' + referenceReferenceElementIdentifier + '"]'),
+            minCopies = referenceReferenceElement?.dataset['minCopies'] || false;
 
-        if ($referenceElement.is('[data-copy-reference]') && $referenceElement.attr('data-copy-reference') !== '') {
-            if ($elementCopies.length <= minCopies) {
-                $element.removeClass('hidden').addClass('disabled');
+        if ((referenceElement.dataset['copyReference'] || false) && referenceElement.dataset['copyReference'] !== '') {
+            if (minCopies && elementCopies.length <= minCopies) {
+                // removeBtnElement.classList.remove('d-none');
+                removeBtnElement.disabled = true;
             } else {
-                $element.removeClass('hidden disabled');
+                // removeBtnElement.classList.remove('d-none');
+                removeBtnElement.disabled = false;
             }
         } else {
-            $element.empty().off().remove();
+            removeBtnElement.remove();
         }
 
-        if ($element.hasClass('disabled')) {
-            $element.off();
+        if (removeBtnElement.disabled) {
+            /* clone element to remove all event listeners */
+            removeBtnElement.replaceWith(removeBtnElement.cloneNode(true));
         } else {
-            $element.off().on('click', function(e) {
-                e.preventDefault();
+            /* clone element to remove all event listeners */
+            let removeBtnElementClone = removeBtnElement.cloneNode(true);
+            removeBtnElement.replaceWith(removeBtnElementClone);
+            removeBtnElementClone.addEventListener('click', (clickEvent) => {
+                clickEvent.preventDefault();
 
-                var $element = $(this),
-                    referenceElementIdentifier = $element.attr('data-remove-button-for'),
-                    $form = $element.closest('form'),
-                    $referenceElement = $('[data-repeatable-container][data-identifier="' + referenceElementIdentifier + '"]', $form),
-                    referenceElementIsRoot = $referenceElement.is('[data-is-root]'),
-                    referenceReferenceElementIdentifier = referenceElementIsRoot ? referenceElementIdentifier : $referenceElement.attr('data-copy-reference'),
-                    $referenceReferenceElement = $('[data-repeatable-container][data-identifier="' + referenceReferenceElementIdentifier + '"]', $form),
-                    $elementCopies = $('[data-repeatable-container][data-copy-reference="' + referenceReferenceElementIdentifier + '"]', $form),
-                    maxCopies = $referenceReferenceElement.attr('data-max-copies'),
-                    $copyButton = $('[data-repeatable-container][data-copy-button-for="' + referenceReferenceElementIdentifier + '"]', $form);
+                let clickElement = clickEvent.currentTarget,
+                    clickFormElement = clickElement.closest('form'),
+                    referenceElementIdentifier = clickElement.dataset['removeButtonFor'],
+                    referenceElement = clickFormElement.querySelector('[data-repeatable-container][data-identifier="' + referenceElementIdentifier + '"]'),
+                    referenceElementIsRoot = 'isRoot' in referenceElement.dataset,
+                    referenceReferenceElementIdentifier = referenceElementIsRoot ? referenceElementIdentifier : referenceElement.dataset['copyReference'],
+                    referenceReferenceElement = clickFormElement.querySelector('[data-repeatable-container][data-identifier="' + referenceReferenceElementIdentifier + '"]'),
+                    elementCopies = clickFormElement.querySelectorAll('[data-repeatable-container][data-copy-reference="' + referenceReferenceElementIdentifier + '"]'),
+                    maxCopies = referenceReferenceElement?.dataset['maxCopies'] || false,
+                    copyButton = clickFormElement.querySelector('[data-repeatable-container][data-copy-button-for="' + referenceReferenceElementIdentifier + '"]');
 
-                if ($elementCopies.length - 1 < maxCopies) {
-                    $copyButton.attr('disabled', null);
+                if (maxCopies && elementCopies.length - 1 < maxCopies) {
+                    copyButton.disabled = false;
                 }
 
-                $referenceElement.empty().off().remove();
-                $(document).trigger('initialize-repeatable-container-remove-buttons');
+                referenceElement.remove();
+                document.dispatchEvent(new CustomEvent('initialize-repeatable-container-remove-buttons'));
             });
         }
     });
 });
 
-$(document).on('after-element-copy', function(event, $containerClone) {
-    $('[data-element-type="DatePicker"]').each(function(e) {
-        var $element = $(this),
-            dateFormat;
+/* DatePicker is a jQuery UI function and we want to get rid of jQuery... */
+/* document.addEventListener('after-element-copy', (afterCopyEvent) => {
+    let containerClone = afterCopyEvent.detail.containerClone;
+    document.querySelectorAll('[data-element-type="DatePicker"]').forEach((datePickerElement) => {
+        var dateFormat;
 
-        if (!$element.hasClass('hasDatepicker') && parseInt($element.attr('data-element-datepicker-enabled')) === 1) {
-            dateFormat = $element.attr('data-element-datepicker-date-format');
+        // if (!datePickerElement.classList.contains('hasDatepicker') && parseInt(datePickerElement.getAttribute('data-element-datepicker-enabled')) === 1) {
+        if (!datePickerElement.classList.contains('hasDatepicker') && parseInt(datePickerElement.dataset['elementDatepickerEnabled']) === 1) {
+            // dateFormat = datePickerElement.getAttribute('data-element-datepicker-date-format');
+            dateFormat = datePickerElement.dataset['elementDatepickerDateFormat'];
 
             dateFormat = dateFormat.replace('d', 'dd');
             dateFormat = dateFormat.replace('j', 'o');
@@ -205,7 +237,7 @@ $(document).on('after-element-copy', function(event, $containerClone) {
             dateFormat = dateFormat.replace('n', 'm');
             dateFormat = dateFormat.replace('Y', 'yy');
 
-            $('#' + $element.attr('id')).datepicker({
+            $('#' + datePickerElement.attr('id')).datepicker({
                 dateFormat: dateFormat
             }).on('keydown', function(e) {
                 if(e.keyCode == 8 || e.keyCode == 46) {
@@ -215,4 +247,4 @@ $(document).on('after-element-copy', function(event, $containerClone) {
             });
         }
     });
-});
+}); */
