@@ -35,6 +35,11 @@ ready(() => {
         inputs.filter((input) => ['checkbox', 'radio', 'hidden'].indexOf(input.getAttribute('type')) == -1).forEach((inputElement) => {
             inputElement.setAttribute('value', '');
         });
+        inputs.filter((input) => ['file'].indexOf(input.getAttribute('type')) >= 0).forEach((inputElement) => {
+            [...inputElement.parentNode.children].filter((child) => child !== inputElement).forEach((siblingElement) => {
+                siblingElement.remove();
+            });
+        });
         inputs.filter((input) => ['checkbox', 'radio'].indexOf(input.getAttribute('type')) >= 0).forEach((inputElement) => {
             inputElement.checked = false;
         });
