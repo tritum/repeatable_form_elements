@@ -15,9 +15,11 @@ finishers will be aware of the copied field(s).
 ## Installation
 
 Copy the extension folder to `\typo3conf\ext\ `, upload it via the extension
-manager or add it to your composer.json. Add the static TypoScript configuration
-to your TypoScript template. Make sure, jQuery is available in the frontend.
-We have tested with TYPO3 v11 and jQuery v2.2.4.
+manager or add it to your composer.json (`composer require tritum/repeatable-form-elements`).
+Add the static TypoScript configuration to your TypoScript template.
+
+Make sure, jQuery is available in the frontend.
+We have tested with TYPO3 v12.4 and jQuery v3.7.1.
 
 ## Usage
 
