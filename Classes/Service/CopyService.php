@@ -11,11 +11,9 @@ namespace TRITUM\RepeatableFormElements\Service;
  * LICENSE.txt file that was distributed with this source code.
  */
 use TRITUM\RepeatableFormElements\FormElements\RepeatableContainerInterface;
-use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Error\Error;
-use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Extbase\Property\PropertyMappingConfiguration;
 use TYPO3\CMS\Extbase\Validation\Validator\ValidatorInterface;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
@@ -101,16 +99,10 @@ class CopyService
         string $originalFormElement,
         string $newElementCopy
     ): array {
-        $typo3Version = new Typo3Version();
         $originalProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($originalFormElement);
 
-        if ($typo3Version->getVersion() >= 11) {
-            GeneralUtility::addInstance(PropertyMappingConfiguration::class, $originalProcessingRule->getPropertyMappingConfiguration());
-            $newProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($newElementCopy);
-        } else {
-            $newProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($newElementCopy);
-            $newProcessingRule->injectPropertyMappingConfiguration($originalProcessingRule->getPropertyMappingConfiguration());
-        }
+        GeneralUtility::addInstance(PropertyMappingConfiguration::class, $originalProcessingRule->getPropertyMappingConfiguration());
+        $newProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($newElementCopy);
 
         try {
             $newProcessingRule->setDataType($originalProcessingRule->getDataType());
@@ -198,7 +190,7 @@ class CopyService
         $implementationClassName = $this->typeDefinitions[$typeName]['implementationClassName'];
         $parentRenderableForNewContainer = $moveAfterContainer->getParentRenderable();
 
-        $newContainer = $this->getObjectManager()->get($implementationClassName, $newIdentifier, $typeName);
+        $newContainer = GeneralUtility::makeInstance($implementationClassName, $newIdentifier, $typeName);
         $this->copyOptions($newContainer, $copyFromContainer);
 
         $parentRenderableForNewContainer->addElement($newContainer);
@@ -322,7 +314,7 @@ class CopyService
         int $timestamp,
         string $defaultMessage = ''
     ): void {
-        $error = $this->getObjectManager()->get(
+        $error = GeneralUtility::makeInstance(
             Error::class,
             TranslationService::getInstance()->translateFormElementError(
                 $formElement,
@@ -375,11 +367,4 @@ class CopyService
         }
     }
 
-    /**
-     * @return ObjectManager
-     */
-    protected function getObjectManager(): ObjectManager
-    {
-        return GeneralUtility::makeInstance(ObjectManager::class);
-    }
 }
