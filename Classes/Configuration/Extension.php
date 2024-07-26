@@ -45,6 +45,7 @@ final class Extension
 
     public static function addTypoScriptSetup(): void
     {
+        // @todo: maybe move this to 'EXT:repeatable_form_elements/ext_typoscript_setup.typoscript'
         ExtensionManagementUtility::addTypoScriptSetup(trim('
             module.tx_form {
                 settings {
