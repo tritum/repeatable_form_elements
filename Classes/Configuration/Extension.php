@@ -27,6 +27,7 @@ namespace TRITUM\RepeatableFormElements\Configuration;
 use TRITUM\RepeatableFormElements\Hooks\FormHooks;
 use TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider;
 use TYPO3\CMS\Core\Imaging\IconRegistry;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -35,6 +36,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  *
  * @author Ralf Zimmermann TRITUM GmbH <ralf.zimmermann@tritum.de>
  * @author Elias Häußler <elias@haeussler.dev>
+ * @author Christian Seyfferth | dreistrom.land AG <c.seyfferth@dreistrom.land>
  * @license GPL-2.0-or-later
  */
 final class Extension
@@ -57,6 +59,8 @@ final class Extension
 
     public static function registerIcons(): void
     {
+        if ('12.4' <= self::getTypo3Version()) return;
+
         $iconRegistry = GeneralUtility::makeInstance(IconRegistry::class);
         $iconRegistry->registerIcon(
             't3-form-icon-repeatable-container',
@@ -69,5 +73,10 @@ final class Extension
     {
         $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['afterInitializeCurrentPage'][1511196413] = FormHooks::class;
         $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['beforeRendering'][1511196413] = FormHooks::class;
+    }
+
+    private static function getTypo3Version() : string
+    {
+        return (new Typo3Version())->getVersion();
     }
 }
