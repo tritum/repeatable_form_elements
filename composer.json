@@ -24,9 +24,9 @@
         }
     ],
     "require": {
-        "typo3/cms-core": "^11.5.23",
-        "typo3/cms-extbase": "^11.5.23",
-        "typo3/cms-form": "^11.5.23"
+        "typo3/cms-core": "^11.5.23 || ^12.4",
+        "typo3/cms-extbase": "^11.5.23 || ^12.4",
+        "typo3/cms-form": "^11.5.23 || ^12.4"
     },
     "autoload": {
         "psr-4": {

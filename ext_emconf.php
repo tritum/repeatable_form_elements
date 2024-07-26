@@ -10,7 +10,7 @@ $EM_CONF['repeatable_form_elements'] = [
     'version' => '3.1.1',
     'constraints' => [
         'depends' => [
-            'typo3' => '11.5.23-11.99.99',
+            'typo3' => '11.5.23-12.4.99',
         ],
         'conflicts' => [],
         'suggests' => [],
