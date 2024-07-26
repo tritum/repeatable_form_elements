@@ -316,7 +316,7 @@ class CopyService
     ): void {
         $error = GeneralUtility::makeInstance(
             Error::class,
-            TranslationService::getInstance()->translateFormElementError(
+            GeneralUtility::makeInstance(TranslationService::class)->translateFormElementError(
                 $formElement,
                 $timestamp,
                 [],
