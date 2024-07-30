@@ -382,7 +382,7 @@ class CopyService
      * new form element.
      *
      * @param FormElementInterface $originalFormElement
-     * @param $newFormElement
+     * @param FormElementInterface $newFormElement
      * @param string $newIdentifier
      * @return void
      */
@@ -395,6 +395,7 @@ class CopyService
 
         $originalVariants = $originalFormElement->getVariants();
         foreach ($originalVariants as $originalIdentifier => $originalVariant) {
+            // make sure that we only copy variants that are missing in the copied element
             if ($originalVariant instanceof RenderableVariant
                 && !in_array($originalIdentifier, array_keys($newFormElement->getVariants()))
             ) {
@@ -403,15 +404,29 @@ class CopyService
                 $reflectionClass = new \ReflectionClass(RenderableVariant::class);
                 $propOption      = $reflectionClass->getProperty('options');
                 $propCondition   = $reflectionClass->getProperty('condition');
-
                 if (version_compare(phpversion(), '8.1.0', '<')) {
                     $propOption->setAccessible(true);
                     $propCondition->setAccessible(true);
                 }
-
                 $options               = $propOption->getValue($originalVariant);
                 $condition             = $propCondition->getValue($originalVariant);
-                $options['condition']  = str_replace($originalFormElement->getIdentifier(), $newIdentifier, $condition);
+
+                // get path strings for identifiers for replacement in condition
+                // e.g. for `traverse(formValues, 'repeatablecontainer-1.0.checkbox-1')`
+                $originalIdentifierAsPath = str_replace('.', '/', $originalFormElement->getIdentifier());
+                $newIdentifierAsPath      = str_replace('.', '/', $newIdentifier);
+
+                // adapt original condition to match identifier of the copied form element
+                $options['condition']  = str_replace(
+                    [
+                        $originalFormElement->getIdentifier(),
+                        $originalIdentifierAsPath
+                    ],
+                    [
+                        $newIdentifier,
+                        $newIdentifierAsPath
+                    ],
+                    $condition);
                 $options['identifier'] = $originalIdentifier;
 
                 $newFormElement->createVariant($options);
