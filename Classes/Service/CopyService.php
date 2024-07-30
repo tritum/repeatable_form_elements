@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace TRITUM\RepeatableFormElements\Service;
 
@@ -10,7 +10,9 @@ namespace TRITUM\RepeatableFormElements\Service;
  * For the full copyright and license information, please read the
  * LICENSE.txt file that was distributed with this source code.
  */
+
 use TRITUM\RepeatableFormElements\FormElements\RepeatableContainerInterface;
+use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Error\Error;
@@ -19,6 +21,7 @@ use TYPO3\CMS\Extbase\Validation\Validator\ValidatorInterface;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
 use TYPO3\CMS\Form\Domain\Model\FormElements\FormElementInterface;
 use TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface;
+use TYPO3\CMS\Form\Domain\Model\Renderable\RenderableVariant;
 use TYPO3\CMS\Form\Domain\Runtime\FormRuntime;
 use TYPO3\CMS\Form\Domain\Runtime\FormState;
 use TYPO3\CMS\Form\Mvc\ProcessingRule;
@@ -52,6 +55,11 @@ class CopyService
     protected $typeDefinitions = [];
 
     /**
+     * @var Features
+     */
+    protected $features;
+
+    /**
      * @param FormRuntime $formRuntime
      */
     public function __construct(FormRuntime $formRuntime)
@@ -60,6 +68,7 @@ class CopyService
         $this->formState = $formRuntime->getFormState();
         $this->formDefinition = $formRuntime->getFormDefinition();
         $this->typeDefinitions = $this->formDefinition->getTypeDefinitions();
+        $this->features = GeneralUtility::makeInstance(Features::class);
     }
 
     /**
@@ -261,6 +270,7 @@ class CopyService
         );
         $this->copyOptions($newFormElement, $originalFormElement);
         $this->copyProcessingRule($originalFormElement->getIdentifier(), $newIdentifier);
+        $this->copyVariants($originalFormElement, $newFormElement, $newIdentifier);
 
         foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['afterBuildingFinished'] ?? [] as $className) {
             $hookObj = GeneralUtility::makeInstance($className);
@@ -363,6 +373,48 @@ class CopyService
 
                 $this->removeDeletedRepeatableContainersFromFormValuesByRequest($argumentValue, $argumentPath);
                 array_pop($argumentPath);
+            }
+        }
+    }
+
+    /**
+     * This function fetches variants of the original form element and copies them into the
+     * new form element.
+     *
+     * @param FormElementInterface $originalFormElement
+     * @param $newFormElement
+     * @param string $newIdentifier
+     * @return void
+     */
+    protected function copyVariants(
+        FormElementInterface $originalFormElement,
+        FormElementInterface $newFormElement,
+        string               $newIdentifier): void
+    {
+        if (!$this->features->isFeatureEnabled('repeatableFormElements.copyVariants')) return;
+
+        $originalVariants = $originalFormElement->getVariants();
+        foreach ($originalVariants as $originalIdentifier => $originalVariant) {
+            if ($originalVariant instanceof RenderableVariant
+                && !in_array($originalIdentifier, array_keys($newFormElement->getVariants()))
+            ) {
+                // variant properties are protected and class is marked internal,
+                // so we use reflection
+                $reflectionClass = new \ReflectionClass(RenderableVariant::class);
+                $propOption      = $reflectionClass->getProperty('options');
+                $propCondition   = $reflectionClass->getProperty('condition');
+
+                if (version_compare(phpversion(), '8.1.0', '<')) {
+                    $propOption->setAccessible(true);
+                    $propCondition->setAccessible(true);
+                }
+
+                $options               = $propOption->getValue($originalVariant);
+                $condition             = $propCondition->getValue($originalVariant);
+                $options['condition']  = str_replace($originalFormElement->getIdentifier(), $newIdentifier, $condition);
+                $options['identifier'] = $originalIdentifier;
+
+                $newFormElement->createVariant($options);
             }
         }
     }
