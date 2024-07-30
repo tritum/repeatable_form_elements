@@ -1,0 +1,13 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  TRITUM\RepeatableFormElements\:
+    resource: '../Classes/*'
+
+  TRITUM\RepeatableFormElements\EventListener\AdaptVariantConditionEventListener:
+    tags:
+      - name: event.listener
+        identifier: 'repeatableFormElements/copyVariants/adaptCondition'

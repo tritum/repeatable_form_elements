@@ -11,6 +11,8 @@ namespace TRITUM\RepeatableFormElements\Service;
  * LICENSE.txt file that was distributed with this source code.
  */
 
+use Psr\EventDispatcher\EventDispatcherInterface;
+use TRITUM\RepeatableFormElements\Event\CopyVariantEvent;
 use TRITUM\RepeatableFormElements\FormElements\RepeatableContainerInterface;
 use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
@@ -380,6 +382,7 @@ class CopyService
     /**
      * This function fetches variants of the original form element and copies them into the
      * new form element.
+     * Extendable by listening for @see CopyVariantEvent
      *
      * @param FormElementInterface $originalFormElement
      * @param FormElementInterface $newFormElement
@@ -404,30 +407,20 @@ class CopyService
                 $reflectionClass = new \ReflectionClass(RenderableVariant::class);
                 $propOption      = $reflectionClass->getProperty('options');
                 $propCondition   = $reflectionClass->getProperty('condition');
+                // @todo: can be ommited when php7.4 is no longer supported.
                 if (version_compare(phpversion(), '8.1.0', '<')) {
                     $propOption->setAccessible(true);
                     $propCondition->setAccessible(true);
                 }
                 $options               = $propOption->getValue($originalVariant);
-                $condition             = $propCondition->getValue($originalVariant);
-
-                // get path strings for identifiers for replacement in condition
-                // e.g. for `traverse(formValues, 'repeatablecontainer-1.0.checkbox-1')`
-                $originalIdentifierAsPath = str_replace('.', '/', $originalFormElement->getIdentifier());
-                $newIdentifierAsPath      = str_replace('.', '/', $newIdentifier);
-
-                // adapt original condition to match identifier of the copied form element
-                $options['condition']  = str_replace(
-                    [
-                        $originalFormElement->getIdentifier(),
-                        $originalIdentifierAsPath
-                    ],
-                    [
-                        $newIdentifier,
-                        $newIdentifierAsPath
-                    ],
-                    $condition);
+                $options['condition']  = $propCondition->getValue($originalVariant);
                 $options['identifier'] = $originalIdentifier;
+
+                $eventDispatcher = GeneralUtility::makeInstance(EventDispatcherInterface::class);
+                $event = $eventDispatcher->dispatch(
+                    new CopyVariantEvent($options, $originalFormElement, $newFormElement, $newIdentifier),
+                );
+                $options = $event->getOptions();
 
                 $newFormElement->createVariant($options);
             }
