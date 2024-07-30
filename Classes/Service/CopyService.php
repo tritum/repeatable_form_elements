@@ -417,11 +417,15 @@ class CopyService
                 $options['identifier'] = $originalIdentifier;
 
                 $eventDispatcher = GeneralUtility::makeInstance(EventDispatcherInterface::class);
+                /** @var CopyVariantEvent $event */
                 $event = $eventDispatcher->dispatch(
                     new CopyVariantEvent($options, $originalFormElement, $newFormElement, $newIdentifier),
                 );
-                $options = $event->getOptions();
 
+                // only add this variant, if it did not get disabled.
+                if (!$event->isVariantEnabled()) continue;
+
+                $options = $event->getOptions();
                 $newFormElement->createVariant($options);
             }
         }

@@ -18,10 +18,11 @@ use TYPO3\CMS\Form\Domain\Model\FormElements\FormElementInterface;
  */
 class CopyVariantEvent
 {
-    private $options;
+    private array $options;
     private FormElementInterface $originalFormElement;
     private FormElementInterface $newFormElement;
     private string $newIdentifier;
+    private bool $variantEnabled = true;
 
     public function __construct(
         array                $options,
@@ -59,6 +60,16 @@ class CopyVariantEvent
     public function getNewIdentifier(): string
     {
         return $this->newIdentifier;
+    }
+
+    public function isVariantEnabled(): bool
+    {
+        return $this->variantEnabled;
+    }
+
+    public function setVariantEnabled(bool $variantEnabled): void
+    {
+        $this->variantEnabled = $variantEnabled;
     }
 
 
