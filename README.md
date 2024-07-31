@@ -45,7 +45,7 @@ The following options can be used to extend the behavior when copying.
 
 ## Credits
 
-This TYPO3 extension was created by Ralf Zimmermann (https://www.tritum.de).
+This TYPO3 extension was created by Ralf Zimmermann (https://dreistrom.land).
 
 ## Thank you
 

@@ -7,14 +7,14 @@
     "authors": [
         {
             "name": "Ralf Zimmermann",
-            "email": "ralf.zimmermann@tritum.de",
-            "homepage": "https://www.tritum.de",
+            "email": "r.zimmermann@dreistrom.land",
+            "homepage": "https://dreistrom.land",
             "role": "Developer"
         },
         {
-            "name": "Falko Linke TRITUM GmbH",
-            "email": "falko.linke@tritum.de",
-            "homepage": "https://www.tritum.de",
+            "name": "Falko Linke",
+            "email": "f.linke@dreistrom.land",
+            "homepage": "https://dreistrom.land",
             "role": "Developer"
         },
         {
@@ -24,7 +24,7 @@
             "role": "Developer"
         },
         {
-            "name": "Christian Seyfferth dreistrom.land AG",
+            "name": "Christian Seyfferth",
             "email": "c.seyfferth@dreistrom.land",
             "homepage": "https://dreistrom.land",
             "role": "Developer"

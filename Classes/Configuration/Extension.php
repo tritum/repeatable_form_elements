@@ -5,7 +5,7 @@ declare(strict_types=1);
 /*
  * This file is part of the TYPO3 CMS extension "repeatable_form_elements".
  *
- * Copyright (C) 2018 Ralf Zimmermann TRITUM GmbH <ralf.zimmermann@tritum.de>
+ * Copyright (C) 2018 Ralf Zimmermann dreistrom.land AG <r.zimmermann@dreistrom.land>
  * Copyright (C) 2021 Elias Häußler <elias@haeussler.dev>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -34,7 +34,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 /**
  * Extension
  *
- * @author Ralf Zimmermann TRITUM GmbH <ralf.zimmermann@tritum.de>
+ * @author Ralf Zimmermann | dreistrom.land AG <r.zimmermann@dreistrom.land>
  * @author Elias Häußler <elias@haeussler.dev>
  * @author Christian Seyfferth | dreistrom.land AG <c.seyfferth@dreistrom.land>
  * @license GPL-2.0-or-later
