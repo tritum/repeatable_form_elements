@@ -31,6 +31,8 @@ Add the desired fields with the favored validators to the "Repeatable container"
 The frontend will render the "Repeatable container" as fieldset. In addition to the
 included form elements it will display buttons for copying/ removing new sets of fields.
 
+The newly implemented extended version of SaveToDatabaseFinisher can be used as seen [here](Resources/Private/ExampleFormDefinitions/extended-save-to-database-finisher.form.yaml).
+
 ## Configuration
 
 To deactivate the copying of variants, the feature `repeatableFormElements.copyVariants` can be used
@@ -56,5 +58,8 @@ Elias Häußler - haeussler.dev - for helping with TYPO3v11 compatability and pr
 the beautiful [TYPO3 badges](https://typo3-badges.dev). Use them. Give him some kudos!
 
 Uwe - Hawkeye1909 - for removing jQuery as dependency.
+
+Alexander Opitz @ extrameile-gehen.de - for his work on saving repeatable elements to database.
+
 
 especially to all others who have contributed to the improvement of the extension.
