@@ -15,7 +15,10 @@ ready(() => {
         for (const copyElement of containerClone.querySelectorAll('[data-repeatable-container][data-is-copy]')) {
             copyElement.remove();
         }
-        containerClone.querySelector('[data-repeatable-container][data-copy-button]').remove();
+        let copyButton = containerClone.querySelector('[data-repeatable-container][data-copy-button]');
+        if (copyButton !== null) {
+            copyButton.remove();
+        }
         for (const alertElement of containerClone.querySelectorAll('[role="alert"]')) {
             alertElement.remove();
         }
