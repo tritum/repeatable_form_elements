@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types = 1);
+
 namespace TRITUM\RepeatableFormElements\Hooks;
 
 /**
@@ -11,7 +13,6 @@ namespace TRITUM\RepeatableFormElements\Hooks;
 use TRITUM\RepeatableFormElements\FormElements\RepeatableContainerInterface;
 use TRITUM\RepeatableFormElements\Service\CopyService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Extbase\Validation\Validator\ValidatorInterface;
 use TYPO3\CMS\Form\Domain\Model\FormElements\AbstractFormElement;
 use TYPO3\CMS\Form\Domain\Model\FormElements\FormElementInterface;
@@ -44,10 +45,11 @@ class FormHooks
             return $currentPage;
         }
 
+        $copyService = GeneralUtility::makeInstance(CopyService::class, $formRuntime);
         if ($this->userWentBackToPreviousStep($formRuntime, $currentPage, $lastPage)) {
-            $this->getObjectManager()->get(CopyService::class, $formRuntime)->createCopiesFromFormState();
+            $copyService->createCopiesFromFormState();
         } else {
-            $this->getObjectManager()->get(CopyService::class, $formRuntime)->createCopiesFromCurrentRequest();
+            $copyService->createCopiesFromCurrentRequest();
         }
 
         return $currentPage;
@@ -110,7 +112,7 @@ class FormHooks
             $renderable->setIdentifier($newIdentifier);
             $formRuntime->getFormDefinition()->registerRenderable($renderable);
 
-            $copyService = $this->getObjectManager()->get(CopyService::class, $formRuntime);
+            $copyService = GeneralUtility::makeInstance(CopyService::class, $formRuntime);
             [$originalProcessingRule] = $copyService->copyProcessingRule($originalIdentifier, $newIdentifier);
 
             /** @var ValidatorInterface $validator */
@@ -149,13 +151,5 @@ class FormHooks
         return $currentPage !== null
                 && $lastPage !== null
                 && $currentPage->getIndex() < $lastPage->getIndex();
-    }
-
-    /**
-     * @return ObjectManager
-     */
-    protected function getObjectManager(): ObjectManager
-    {
-        return GeneralUtility::makeInstance(ObjectManager::class);
     }
 }

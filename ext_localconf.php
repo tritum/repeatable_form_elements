@@ -1,7 +1,13 @@
 <?php
 
+use TRITUM\RepeatableFormElements\Configuration\Extension;
+
 defined('TYPO3') or die();
 
-\TRITUM\RepeatableFormElements\Configuration\Extension::addTypoScriptSetup();
-\TRITUM\RepeatableFormElements\Configuration\Extension::registerIcons();
-\TRITUM\RepeatableFormElements\Configuration\Extension::registerHooks();
+call_user_func(function () {
+    Extension::addTypoScriptSetup();
+    Extension::registerIcons();
+    Extension::registerHooks();
+
+    $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['repeatableFormElements.copyVariants'] ??= true;
+});

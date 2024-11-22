@@ -3,17 +3,18 @@
     "description": "Adds a new form element which allows the editor to create new container elements with any type fields in them. In the frontend, a user can create any number of new containers. This is an extension for TYPO3 CMS.",
     "license": "GPL-2.0-or-later",
     "type": "typo3-cms-extension",
+    "version": "4.0.1",
     "authors": [
         {
             "name": "Ralf Zimmermann",
-            "email": "ralf.zimmermann@tritum.de",
-            "homepage": "https://www.tritum.de",
+            "email": "r.zimmermann@dreistrom.land",
+            "homepage": "https://dreistrom.land",
             "role": "Developer"
         },
         {
-            "name": "Falko Linke TRITUM GmbH",
-            "email": "falko.linke@tritum.de",
-            "homepage": "https://www.tritum.de",
+            "name": "Falko Linke",
+            "email": "f.linke@dreistrom.land",
+            "homepage": "https://dreistrom.land",
             "role": "Developer"
         },
         {
@@ -21,12 +22,18 @@
             "email": "elias@haeussler.dev",
             "homepage": "https://haeussler.dev",
             "role": "Developer"
+        },
+        {
+            "name": "Christian Seyfferth",
+            "email": "c.seyfferth@dreistrom.land",
+            "homepage": "https://dreistrom.land",
+            "role": "Developer"
         }
     ],
     "require": {
-        "typo3/cms-core": "^11.5.23",
-        "typo3/cms-extbase": "^11.5.23",
-        "typo3/cms-form": "^11.5.23"
+        "typo3/cms-core": "^11.5.23 || ^12.4",
+        "typo3/cms-extbase": "^11.5.23 || ^12.4",
+        "typo3/cms-form": "^11.5.23 || ^12.4"
     },
     "autoload": {
         "psr-4": {

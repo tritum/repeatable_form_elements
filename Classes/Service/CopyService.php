@@ -1,5 +1,7 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
+
 namespace TRITUM\RepeatableFormElements\Service;
 
 /**
@@ -8,17 +10,20 @@ namespace TRITUM\RepeatableFormElements\Service;
  * For the full copyright and license information, please read the
  * LICENSE.txt file that was distributed with this source code.
  */
+
+use Psr\EventDispatcher\EventDispatcherInterface;
+use TRITUM\RepeatableFormElements\Event\CopyVariantEvent;
 use TRITUM\RepeatableFormElements\FormElements\RepeatableContainerInterface;
-use TYPO3\CMS\Core\Information\Typo3Version;
+use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Error\Error;
-use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Extbase\Property\PropertyMappingConfiguration;
 use TYPO3\CMS\Extbase\Validation\Validator\ValidatorInterface;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
 use TYPO3\CMS\Form\Domain\Model\FormElements\FormElementInterface;
 use TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface;
+use TYPO3\CMS\Form\Domain\Model\Renderable\RenderableVariant;
 use TYPO3\CMS\Form\Domain\Runtime\FormRuntime;
 use TYPO3\CMS\Form\Domain\Runtime\FormState;
 use TYPO3\CMS\Form\Mvc\ProcessingRule;
@@ -52,6 +57,11 @@ class CopyService
     protected $typeDefinitions = [];
 
     /**
+     * @var Features
+     */
+    protected $features;
+
+    /**
      * @param FormRuntime $formRuntime
      */
     public function __construct(FormRuntime $formRuntime)
@@ -60,6 +70,7 @@ class CopyService
         $this->formState = $formRuntime->getFormState();
         $this->formDefinition = $formRuntime->getFormDefinition();
         $this->typeDefinitions = $this->formDefinition->getTypeDefinitions();
+        $this->features = GeneralUtility::makeInstance(Features::class);
     }
 
     /**
@@ -99,16 +110,10 @@ class CopyService
         string $originalFormElement,
         string $newElementCopy
     ): array {
-        $typo3Version = new Typo3Version();
         $originalProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($originalFormElement);
 
-        if ($typo3Version->getVersion() >= 11) {
-            GeneralUtility::addInstance(PropertyMappingConfiguration::class, $originalProcessingRule->getPropertyMappingConfiguration());
-            $newProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($newElementCopy);
-        } else {
-            $newProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($newElementCopy);
-            $newProcessingRule->injectPropertyMappingConfiguration($originalProcessingRule->getPropertyMappingConfiguration());
-        }
+        GeneralUtility::addInstance(PropertyMappingConfiguration::class, $originalProcessingRule->getPropertyMappingConfiguration());
+        $newProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($newElementCopy);
 
         try {
             $newProcessingRule->setDataType($originalProcessingRule->getDataType());
@@ -196,7 +201,7 @@ class CopyService
         $implementationClassName = $this->typeDefinitions[$typeName]['implementationClassName'];
         $parentRenderableForNewContainer = $moveAfterContainer->getParentRenderable();
 
-        $newContainer = $this->getObjectManager()->get($implementationClassName, $newIdentifier, $typeName);
+        $newContainer = GeneralUtility::makeInstance($implementationClassName, $newIdentifier, $typeName);
         $this->copyOptions($newContainer, $copyFromContainer);
 
         $parentRenderableForNewContainer->addElement($newContainer);
@@ -267,6 +272,7 @@ class CopyService
         );
         $this->copyOptions($newFormElement, $originalFormElement);
         $this->copyProcessingRule($originalFormElement->getIdentifier(), $newIdentifier);
+        $this->copyVariants($originalFormElement, $newFormElement, $newIdentifier);
 
         foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['afterBuildingFinished'] ?? [] as $className) {
             $hookObj = GeneralUtility::makeInstance($className);
@@ -320,9 +326,9 @@ class CopyService
         int $timestamp,
         string $defaultMessage = ''
     ): void {
-        $error = $this->getObjectManager()->get(
+        $error = GeneralUtility::makeInstance(
             Error::class,
-            TranslationService::getInstance()->translateFormElementError(
+            GeneralUtility::makeInstance(TranslationService::class)->translateFormElementError(
                 $formElement,
                 $timestamp,
                 [],
@@ -374,10 +380,55 @@ class CopyService
     }
 
     /**
-     * @return ObjectManager
+     * This function fetches variants of the original form element and copies them into the
+     * new form element.
+     * Extendable by listening for @see CopyVariantEvent
+     *
+     * @param FormElementInterface $originalFormElement
+     * @param FormElementInterface $newFormElement
+     * @param string $newIdentifier
+     * @return void
      */
-    protected function getObjectManager(): ObjectManager
+    protected function copyVariants(
+        FormElementInterface $originalFormElement,
+        FormElementInterface $newFormElement,
+        string               $newIdentifier): void
     {
-        return GeneralUtility::makeInstance(ObjectManager::class);
+        if (!$this->features->isFeatureEnabled('repeatableFormElements.copyVariants')) return;
+
+        $originalVariants = $originalFormElement->getVariants();
+        foreach ($originalVariants as $originalIdentifier => $originalVariant) {
+            // make sure that we only copy variants that are missing in the copied element
+            if ($originalVariant instanceof RenderableVariant
+                && !in_array($originalIdentifier, array_keys($newFormElement->getVariants()))
+            ) {
+                // variant properties are protected and class is marked internal,
+                // so we use reflection
+                $reflectionClass = new \ReflectionClass(RenderableVariant::class);
+                $propOption      = $reflectionClass->getProperty('options');
+                $propCondition   = $reflectionClass->getProperty('condition');
+                // @todo: can be ommited when php7.4 is no longer supported.
+                if (version_compare(phpversion(), '8.1.0', '<')) {
+                    $propOption->setAccessible(true);
+                    $propCondition->setAccessible(true);
+                }
+                $options               = $propOption->getValue($originalVariant);
+                $options['condition']  = $propCondition->getValue($originalVariant);
+                $options['identifier'] = $originalIdentifier;
+
+                $eventDispatcher = GeneralUtility::makeInstance(EventDispatcherInterface::class);
+                /** @var CopyVariantEvent $event */
+                $event = $eventDispatcher->dispatch(
+                    new CopyVariantEvent($options, $originalFormElement, $newFormElement, $newIdentifier),
+                );
+
+                // only add this variant, if it did not get disabled.
+                if (!$event->isVariantEnabled()) continue;
+
+                $options = $event->getOptions();
+                $newFormElement->createVariant($options);
+            }
+        }
     }
+
 }
