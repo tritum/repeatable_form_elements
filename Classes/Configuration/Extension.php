@@ -58,26 +58,9 @@ final class Extension
         '));
     }
 
-    public static function registerIcons(): void
-    {
-        if ('12.4' <= self::getTypo3Version()) return;
-
-        $iconRegistry = GeneralUtility::makeInstance(IconRegistry::class);
-        $iconRegistry->registerIcon(
-            't3-form-icon-repeatable-container',
-            SvgIconProvider::class,
-            ['source' => 'EXT:repeatable_form_elements/Resources/Public/Icons/t3-form-icon-repeatable-container.svg']
-        );
-    }
-
     public static function registerHooks(): void
     {
         $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['afterInitializeCurrentPage'][1511196413] = FormHooks::class;
         $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['beforeRendering'][1511196413] = FormHooks::class;
-    }
-
-    private static function getTypo3Version() : string
-    {
-        return (new Typo3Version())->getVersion();
     }
 }
