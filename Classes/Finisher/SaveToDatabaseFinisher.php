@@ -1,6 +1,4 @@
 <?php
-declare(strict_types=1);
-
 
 /**
  * This file is part of the "repeatable_form_elements" Extension for TYPO3 CMS.
@@ -8,6 +6,8 @@ declare(strict_types=1);
  * For the full copyright and license information, please read the
  * LICENSE.txt file that was distributed with this source code.
  */
+
+declare(strict_types=1);
 
 namespace TRITUM\RepeatableFormElements\Finisher;
 
@@ -19,20 +19,19 @@ use TYPO3\CMS\Extbase\Domain\Model\FileReference;
 use TYPO3\CMS\Form\Domain\Model\FormElements\FormElementInterface;
 
 /**
- * This finisher is an extension to the default SaveToDatabaseFinisher. It is intentionally registered as a new Identifier to keep compatibility with existing forms.
+ * This finisher is an extension to the default SaveToDatabaseFinisher. 
+ * It is intentionally registered as a new identifier to keep compatibility with existing forms.
  */
-
 class SaveToDatabaseFinisher extends \TYPO3\CMS\Form\Domain\Finishers\SaveToDatabaseFinisher
 {
-
     protected function process(int $iterationCount)
     {
         $this->throwExceptionOnInconsistentConfiguration();
 
-        $table                               = $this->parseOption('table');
-        $table                               = is_string($table) ? $table : '';
-        $elementsConfiguration               = $this->parseOption('elements');
-        $elementsConfiguration               = is_array($elementsConfiguration) ? $elementsConfiguration : [];
+        $table = $this->parseOption('table');
+        $table = is_string($table) ? $table : '';
+        $elementsConfiguration = $this->parseOption('elements');
+        $elementsConfiguration  = is_array($elementsConfiguration) ? $elementsConfiguration : [];
         $databaseColumnMappingsConfiguration = $this->parseOption('databaseColumnMappings');
 
         $this->databaseConnection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable($table);
@@ -75,7 +74,7 @@ class SaveToDatabaseFinisher extends \TYPO3\CMS\Form\Domain\Finishers\SaveToData
     {
         $containerValues = ArrayUtility::getValueByPath($this->getFormValues(), $containerPath, '.');
         foreach ($containerValues as $copyId => $containerItem) {
-            $prefix           = $containerPath . '.' . $copyId . '.';
+            $prefix = $containerPath . '.' . $copyId . '.';
             // store data inside new array to keep prepared $databaseData for all iterations
             $itemDatabaseData = $this->prepareData($elementsConfiguration, $databaseData, $containerItem, $prefix);
 
@@ -117,7 +116,7 @@ class SaveToDatabaseFinisher extends \TYPO3\CMS\Form\Domain\Finishers\SaveToData
             } elseif (is_array($elementValue)) {
                 $elementValue = implode(',', $elementValue);
             } elseif ($elementValue instanceof DateTimeInterface) {
-                $format       = $elementsConfiguration[$elementIdentifier]['dateFormat'] ?? 'U';
+                $format = $elementsConfiguration[$elementIdentifier]['dateFormat'] ?? 'U';
                 $elementValue = $elementValue->format($format);
             }
 
@@ -167,7 +166,6 @@ class SaveToDatabaseFinisher extends \TYPO3\CMS\Form\Domain\Finishers\SaveToData
             }
         }
     }
-
 
     /**
      * This will check if a element shall or can be handled
