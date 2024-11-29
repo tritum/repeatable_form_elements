@@ -1,0 +1,91 @@
+
+renderingOptions:
+  submitButtonLabel: Submit
+type: Form
+identifier: extended-save-to-database-finisher
+label: extended-save-to-database-finisher
+prototypeName: standard
+finishers:
+  -
+    options:
+      0:
+        table: tt_content
+        mode: insert
+        elements:
+          Example:
+            mapOnDatabaseColumn: bodytext
+        databaseColumnMappings:
+          CType:
+            value: textmedia
+      1:
+        table: sys_file_reference
+        mode: insert
+        container: RepeatableContainer-1
+        elements:
+          'imageupload-1':
+            mapOnDatabaseColumn: uid_local
+          'Person':
+            mapOnDatabaseColumn: description
+        databaseColumnMappings:
+          uid_foreign:
+            value: '{ExtendedSaveToDatabase.insertedUids.0}'
+          tablenames:
+            value: tt_content
+          fieldname:
+            value: assets
+      2:
+        table: tt_content
+        mode: update
+        whereClause:
+          uid: '{ExtendedSaveToDatabase.insertedUids.0}'
+        databaseColumnMappings:
+          assets:
+            value: '{ExtendedSaveToDatabase.countInserts.1}'
+    identifier: ExtendedSaveToDatabase
+renderables:
+  -
+    renderingOptions:
+      previousButtonLabel: 'Previous step'
+      nextButtonLabel: 'Next step'
+    type: Page
+    identifier: page-1
+    label: Step
+    renderables:
+      -
+        defaultValue: ''
+        type: Text
+        identifier: Example
+        label: ExampleTest
+      -
+        properties:
+          minimumCopies: '1'
+          maximumCopies: 10
+          showRemoveButton: true
+          copyButtonLabel: Copy
+          removeButtonLabel: Remove
+        type: RepeatableContainer
+        identifier: RepeatableContainer-1
+        label: RepeatableContainerTest
+        renderables:
+          -
+            defaultValue: ''
+            type: Text
+            identifier: Person
+            label: PersonTest
+          -
+            properties:
+              saveToFileMount: '1:/user_upload/'
+              allowedMimeTypes:
+                - image/jpeg
+                - image/png
+                - image/bmp
+            type: ImageUpload
+            identifier: imageupload-1
+            label: 'Image upload'
+  -
+    renderingOptions:
+      previousButtonLabel: 'Previous step'
+      nextButtonLabel: 'Next step'
+    type: SummaryPage
+    identifier: summarypage-1
+    label: 'Summary step'
