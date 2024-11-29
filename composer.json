@@ -3,7 +3,6 @@
     "description": "Adds a new form element which allows the editor to create new container elements with any type fields in them. In the frontend, a user can create any number of new containers. This is an extension for TYPO3 CMS.",
     "license": "GPL-2.0-or-later",
     "type": "typo3-cms-extension",
-    "version": "4.0.1",
     "authors": [
         {
             "name": "Ralf Zimmermann",
@@ -31,9 +30,9 @@
         }
     ],
     "require": {
-        "typo3/cms-core": "^11.5.23 || ^12.4",
-        "typo3/cms-extbase": "^11.5.23 || ^12.4",
-        "typo3/cms-form": "^11.5.23 || ^12.4"
+        "typo3/cms-core": "^12.4 || ^13.4",
+        "typo3/cms-extbase": "^12.4 || ^13.4",
+        "typo3/cms-form": "^12.4 || ^13.4"
     },
     "autoload": {
         "psr-4": {
