@@ -8,7 +8,7 @@ plugin.tx_form {
 
 page {
     includeJSFooter {
-        1511193639 = EXT:repeatable_form_elements/Resources/Public/JavaScript/Form/Frontend/RepeatableContainer.js
+        1511193639 = EXT:repeatable_form_elements/Resources/Public/JavaScript/frontend/repeatable-container.js
     }
 
     includeCSS {

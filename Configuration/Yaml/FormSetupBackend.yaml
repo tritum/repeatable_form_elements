@@ -55,8 +55,8 @@ prototypes:
         1595333290: 'EXT:repeatable_form_elements/Resources/Private/Language/Database.xlf'
       translationFiles:
         1595333290: 'EXT:repeatable_form_elements/Resources/Private/Language/Database.xlf'
-      dynamicRequireJsModules:
+      dynamicJavaScriptModules:
         additionalViewModelModules:
-          1595333290: 'TYPO3/CMS/RepeatableFormElements/Form/Backend/FormEditor/ViewModel'
+          1595333290: '@tritum/repeatable-form-elements/backend/form-editor/view-model.js'
       formEditorPartials:
         FormElement-RepeatableContainer: 'Stage/Fieldset'
