@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace TRITUM\RepeatableFormElements\FormElements;
 
@@ -12,6 +12,4 @@ namespace TRITUM\RepeatableFormElements\FormElements;
  */
 use TYPO3\CMS\Form\Domain\Model\FormElements\Section;
 
-class RepeatableContainer extends Section implements RepeatableContainerInterface
-{
-}
+class RepeatableContainer extends Section implements RepeatableContainerInterface {}

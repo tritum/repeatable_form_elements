@@ -31,35 +31,12 @@ use TYPO3\CMS\Form\Service\TranslationService;
 
 class CopyService
 {
-    /**
-     * @var FormRuntime
-     */
-    protected $formRuntime;
-
-    /**
-     * @var FormState
-     */
-    protected $formState;
-
-    /**
-     * @var FormDefinition
-     */
-    protected $formDefinition;
-
-    /**
-     * @var array
-     */
-    protected $repeatableContainersByOriginalIdentifier = [];
-
-    /**
-     * @var array
-     */
-    protected $typeDefinitions = [];
-
-    /**
-     * @var Features
-     */
-    protected $features;
+    protected FormRuntime $formRuntime;
+    protected ?FormState $formState;
+    protected FormDefinition $formDefinition;
+    protected array $repeatableContainersByOriginalIdentifier = [];
+    protected array $typeDefinitions = [];
+    protected mixed $features;
 
     /**
      * @param FormRuntime $formRuntime
@@ -83,7 +60,7 @@ class CopyService
         $this->removeDeletedRepeatableContainersFromFormValuesByRequest($requestArguments);
         $requestArguments = array_replace_recursive(
             $this->formState->getFormValues(),
-            $requestArguments
+            $requestArguments,
         );
 
         $this->copyRepeatableContainersFromArguments($requestArguments);
@@ -108,7 +85,7 @@ class CopyService
      */
     public function copyProcessingRule(
         string $originalFormElement,
-        string $newElementCopy
+        string $newElementCopy,
     ): array {
         $originalProcessingRule = $this->formRuntime->getFormDefinition()->getProcessingRule($originalFormElement);
 
@@ -129,7 +106,7 @@ class CopyService
      */
     protected function copyRepeatableContainersFromArguments(
         array $requestArguments,
-        array $argumentPath = []
+        array $argumentPath = [],
     ): void {
         foreach ($requestArguments as $argumentKey => $argumentValue) {
             if (is_array($argumentValue)) {
@@ -187,15 +164,16 @@ class CopyService
     }
 
     /**
-     * @param RepeatableContainerInterface $originalContainer
+     * @param RepeatableContainerInterface $copyFromContainer
      * @param RepeatableContainerInterface $moveAfterContainer
      * @param string $newIdentifier
+     *
      * @return RepeatableContainerInterface
      */
     protected function copyRepeatableContainer(
         RepeatableContainerInterface $copyFromContainer,
         RepeatableContainerInterface $moveAfterContainer,
-        string $newIdentifier
+        string $newIdentifier,
     ): RepeatableContainerInterface {
         $typeName = $copyFromContainer->getType();
         $implementationClassName = $this->typeDefinitions[$typeName]['implementationClassName'];
@@ -227,7 +205,7 @@ class CopyService
      */
     protected function copyOptions(
         FormElementInterface $newElementCopy,
-        FormElementInterface $originalFormElement
+        FormElementInterface $originalFormElement,
     ): void {
         $newElementCopy->setLabel($originalFormElement->getLabel());
         $newElementCopy->setDefaultValue($originalFormElement->getDefaultValue());
@@ -255,7 +233,7 @@ class CopyService
 
     /**
      * @param FormElementInterface $originalFormElement
-     * @param CompositeRenderableInterface $parentFormElement
+     * @param CompositeRenderableInterface $parentFormElementCopy
      * @param string $identifierOriginal
      * @param string $identifierReplacement
      */
@@ -263,12 +241,12 @@ class CopyService
         FormElementInterface $originalFormElement,
         CompositeRenderableInterface $parentFormElementCopy,
         string $identifierOriginal,
-        string $identifierReplacement
+        string $identifierReplacement,
     ): void {
         $newIdentifier = str_replace($identifierOriginal, $identifierReplacement, $originalFormElement->getIdentifier());
         $newFormElement = $parentFormElementCopy->createElement(
             $newIdentifier,
-            $originalFormElement->getType()
+            $originalFormElement->getType(),
         );
         $this->copyOptions($newFormElement, $originalFormElement);
         $this->copyProcessingRule($originalFormElement->getIdentifier(), $newIdentifier);
@@ -317,14 +295,14 @@ class CopyService
     }
 
     /**
-     * @param FormElementInterface $originalFormElement
+     * @param FormElementInterface $formElement
      * @param int $timestamp
      * @param string $defaultMessage
      */
     protected function addError(
         FormElementInterface $formElement,
         int $timestamp,
-        string $defaultMessage = ''
+        string $defaultMessage = '',
     ): void {
         $error = GeneralUtility::makeInstance(
             Error::class,
@@ -333,9 +311,9 @@ class CopyService
                 $timestamp,
                 [],
                 $defaultMessage,
-                $this->formRuntime
+                $this->formRuntime,
             ),
-            $timestamp
+            $timestamp,
         );
         $this->formDefinition
             ->getProcessingRule($formElement->getIdentifier())
@@ -349,7 +327,7 @@ class CopyService
      */
     protected function removeDeletedRepeatableContainersFromFormValuesByRequest(
         array $requestArguments,
-        array $argumentPath = []
+        array $argumentPath = [],
     ): void {
         foreach ($requestArguments as $argumentKey => $argumentValue) {
             if (is_array($argumentValue)) {
@@ -387,14 +365,15 @@ class CopyService
      * @param FormElementInterface $originalFormElement
      * @param FormElementInterface $newFormElement
      * @param string $newIdentifier
-     * @return void
      */
     protected function copyVariants(
         FormElementInterface $originalFormElement,
         FormElementInterface $newFormElement,
-        string               $newIdentifier): void
-    {
-        if (!$this->features->isFeatureEnabled('repeatableFormElements.copyVariants')) return;
+        string $newIdentifier,
+    ): void {
+        if (!$this->features->isFeatureEnabled('repeatableFormElements.copyVariants')) {
+            return;
+        }
 
         $originalVariants = $originalFormElement->getVariants();
         foreach ($originalVariants as $originalIdentifier => $originalVariant) {
@@ -405,15 +384,10 @@ class CopyService
                 // variant properties are protected and class is marked internal,
                 // so we use reflection
                 $reflectionClass = new \ReflectionClass(RenderableVariant::class);
-                $propOption      = $reflectionClass->getProperty('options');
-                $propCondition   = $reflectionClass->getProperty('condition');
-                // @todo: can be ommited when php7.4 is no longer supported.
-                if (version_compare(phpversion(), '8.1.0', '<')) {
-                    $propOption->setAccessible(true);
-                    $propCondition->setAccessible(true);
-                }
-                $options               = $propOption->getValue($originalVariant);
-                $options['condition']  = $propCondition->getValue($originalVariant);
+                $propOption = $reflectionClass->getProperty('options');
+                $propCondition = $reflectionClass->getProperty('condition');
+                $options = $propOption->getValue($originalVariant);
+                $options['condition'] = $propCondition->getValue($originalVariant);
                 $options['identifier'] = $originalIdentifier;
 
                 $eventDispatcher = GeneralUtility::makeInstance(EventDispatcherInterface::class);
@@ -423,7 +397,9 @@ class CopyService
                 );
 
                 // only add this variant, if it did not get disabled.
-                if (!$event->isVariantEnabled()) continue;
+                if (!$event->isVariantEnabled()) {
+                    continue;
+                }
 
                 $options = $event->getOptions();
                 $newFormElement->createVariant($options);

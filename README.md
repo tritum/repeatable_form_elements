@@ -12,13 +12,12 @@ TYPO3 form framework. It displays one/ a set of fields which can be duplicated
 and removed if desired. Any existing validation is copied as well. All form
 finishers will be aware of the copied field(s).
 
-## Installation
+## Preferred installation
 
-Copy the extension folder to `\typo3conf\ext\ `, upload it via the extension
-manager or add it to your composer.json (`composer require tritum/repeatable-form-elements`).
-Add the static TypoScript configuration to your TypoScript template.
-
-We have tested with TYPO3 v11.5 and v12.4.
+1. Require the extension via composer.
+2. Add the site set tritum/form-element-linked-checkbox to the dependencies of 
+   your site packages site set (TYPO3 v13). Or add the static TypoScript 
+   configuration to your TypoScript template (TYPO3 v12 and TYPO3 v13).
 
 ## Usage
 
@@ -41,8 +40,8 @@ To deactivate the copying of variants, the feature `repeatableFormElements.copyV
 
 The following options can be used to extend the behavior when copying.
 
-| Name | Description                                                      |
-| ---- |------------------------------------------------------------------|
+| Name             | Description                                                      |
+|------------------|------------------------------------------------------------------|
 | CopyVariantEvent | Extend manipulation of copied variants or disable specific ones. |
 
 ## Credits

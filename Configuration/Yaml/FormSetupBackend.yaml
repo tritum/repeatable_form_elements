@@ -1,65 +1,62 @@
-TYPO3:
-  CMS:
-    Form:
-      prototypes:
-        standard:
-          formElementsDefinition:
-            RepeatableContainer:
-              formEditor:
-                predefinedDefaults:
-                  properties:
-                    minimumCopies: 0
-                    maximumCopies: 10
-                    showRemoveButton: true
-                    copyButtonLabel: 'formEditor.elements.RepeatableContainer.editor.copyButtonLabel.value'
-                    removeButtonLabel: 'formEditor.elements.RepeatableContainer.editor.removeButtonLabel.value'
-                label: 'formEditor.elements.RepeatableContainer.label'
-                groupSorting: 150
-                iconIdentifier: 't3-form-icon-repeatable-container'
-                editors:
-                  200:
-                    label: 'formEditor.elements.RepeatableContainer.editor.label.label'
-                  400:
-                    identifier: 'copyButtonLabel'
-                    templateName: 'Inspector-TextEditor'
-                    label: 'formEditor.elements.RepeatableContainer.editor.copyButtonLabel.label'
-                    propertyPath: 'properties.copyButtonLabel'
-                  500:
-                    identifier: 'removeButtonLabel'
-                    templateName: 'Inspector-TextEditor'
-                    label: 'formEditor.elements.RepeatableContainer.editor.removeButtonLabel.label'
-                    propertyPath: 'properties.removeButtonLabel'
-                  600:
-                    identifier: 'minimumCopies'
-                    templateName: 'Inspector-TextEditor'
-                    label: 'formEditor.elements.RepeatableContainer.editor.minimumCopies.label'
-                    propertyPath: 'properties.minimumCopies'
-                    propertyValidatorsMode: 'OR'
-                    propertyValidators:
-                      10: 'Integer'
-                      20: 'FormElementIdentifierWithinCurlyBracesExclusive'
-                  700:
-                    identifier: 'maximumCopies'
-                    templateName: 'Inspector-TextEditor'
-                    label: 'formEditor.elements.RepeatableContainer.editor.maximumCopies.label'
-                    propertyPath: 'properties.maximumCopies'
-                    propertyValidatorsMode: 'OR'
-                    propertyValidators:
-                      10: 'Integer'
-                      20: 'FormElementIdentifierWithinCurlyBracesExclusive'
-                  800:
-                    identifier: 'showRemoveButton'
-                    templateName: 'Inspector-CheckboxEditor'
-                    label: 'formEditor.elements.RepeatableContainer.editor.showRemoveButton.label'
-                    propertyPath: 'properties.showRemoveButton'
-          formEditor:
-            translationFile:
-              10: 'EXT:form/Resources/Private/Language/Database.xlf'
-              1595333290: 'EXT:repeatable_form_elements/Resources/Private/Language/Database.xlf'
-            translationFiles:
-              1595333290: 'EXT:repeatable_form_elements/Resources/Private/Language/Database.xlf'
-            dynamicRequireJsModules:
-              additionalViewModelModules:
-                1595333290: 'TYPO3/CMS/RepeatableFormElements/Form/Backend/FormEditor/ViewModel'
-            formEditorPartials:
-              FormElement-RepeatableContainer: 'Stage/Fieldset'
+prototypes:
+  standard:
+    formElementsDefinition:
+      RepeatableContainer:
+        formEditor:
+          predefinedDefaults:
+            properties:
+              minimumCopies: 0
+              maximumCopies: 10
+              showRemoveButton: true
+              copyButtonLabel: 'formEditor.elements.RepeatableContainer.editor.copyButtonLabel.value'
+              removeButtonLabel: 'formEditor.elements.RepeatableContainer.editor.removeButtonLabel.value'
+          label: 'formEditor.elements.RepeatableContainer.label'
+          groupSorting: 150
+          iconIdentifier: 't3-form-icon-repeatable-container'
+          editors:
+            200:
+              label: 'formEditor.elements.RepeatableContainer.editor.label.label'
+            400:
+              identifier: 'copyButtonLabel'
+              templateName: 'Inspector-TextEditor'
+              label: 'formEditor.elements.RepeatableContainer.editor.copyButtonLabel.label'
+              propertyPath: 'properties.copyButtonLabel'
+            500:
+              identifier: 'removeButtonLabel'
+              templateName: 'Inspector-TextEditor'
+              label: 'formEditor.elements.RepeatableContainer.editor.removeButtonLabel.label'
+              propertyPath: 'properties.removeButtonLabel'
+            600:
+              identifier: 'minimumCopies'
+              templateName: 'Inspector-TextEditor'
+              label: 'formEditor.elements.RepeatableContainer.editor.minimumCopies.label'
+              propertyPath: 'properties.minimumCopies'
+              propertyValidatorsMode: 'OR'
+              propertyValidators:
+                10: 'Integer'
+                20: 'FormElementIdentifierWithinCurlyBracesExclusive'
+            700:
+              identifier: 'maximumCopies'
+              templateName: 'Inspector-TextEditor'
+              label: 'formEditor.elements.RepeatableContainer.editor.maximumCopies.label'
+              propertyPath: 'properties.maximumCopies'
+              propertyValidatorsMode: 'OR'
+              propertyValidators:
+                10: 'Integer'
+                20: 'FormElementIdentifierWithinCurlyBracesExclusive'
+            800:
+              identifier: 'showRemoveButton'
+              templateName: 'Inspector-CheckboxEditor'
+              label: 'formEditor.elements.RepeatableContainer.editor.showRemoveButton.label'
+              propertyPath: 'properties.showRemoveButton'
+    formEditor:
+      translationFile:
+        10: 'EXT:form/Resources/Private/Language/Database.xlf'
+        1595333290: 'EXT:repeatable_form_elements/Resources/Private/Language/Database.xlf'
+      translationFiles:
+        1595333290: 'EXT:repeatable_form_elements/Resources/Private/Language/Database.xlf'
+      dynamicJavaScriptModules:
+        additionalViewModelModules:
+          1595333290: '@tritum/repeatable-form-elements/backend/form-editor/view-model.js'
+      formEditorPartials:
+        FormElement-RepeatableContainer: 'Stage/Fieldset'

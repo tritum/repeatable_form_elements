@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace TRITUM\RepeatableFormElements\Hooks;
 
@@ -14,6 +14,7 @@ use TRITUM\RepeatableFormElements\FormElements\RepeatableContainerInterface;
 use TRITUM\RepeatableFormElements\Service\CopyService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Validation\Validator\ValidatorInterface;
+use TYPO3\CMS\Form\Domain\Model\Exception\DuplicateFormElementException;
 use TYPO3\CMS\Form\Domain\Model\FormElements\AbstractFormElement;
 use TYPO3\CMS\Form\Domain\Model\FormElements\FormElementInterface;
 use TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface;
@@ -28,13 +29,15 @@ class FormHooks
      * @param CompositeRenderableInterface|null $currentPage
      * @param CompositeRenderableInterface|null $lastPage
      * @param array $rawRequestArguments
+     *
      * @return CompositeRenderableInterface|null
+     * @throws DuplicateFormElementException
      */
     public function afterInitializeCurrentPage(
         FormRuntime $formRuntime,
         CompositeRenderableInterface $currentPage = null,
         CompositeRenderableInterface $lastPage = null,
-        array $rawRequestArguments = []
+        array $rawRequestArguments = [],
     ): ?CompositeRenderableInterface {
         foreach ($formRuntime->getPages() as $page) {
             $this->setRootRepeatableContainerIdentifiers($page, $formRuntime);
@@ -76,16 +79,18 @@ class FormHooks
     }
 
     /**
-     * @param RenderableInterface $formElement
+     * @param RenderableInterface $renderable
      * @param FormRuntime $formRuntime
      * @param array $repeatableContainerIdentifiers
+     *
+     * @throws DuplicateFormElementException
      */
     protected function setRootRepeatableContainerIdentifiers(
         RenderableInterface $renderable,
         FormRuntime $formRuntime,
-        array $repeatableContainerIdentifiers = []
+        array $repeatableContainerIdentifiers = [],
     ): void {
-        $isRepeatableContainer = $renderable instanceof RepeatableContainerInterface ? true : false;
+        $isRepeatableContainer = $renderable instanceof RepeatableContainerInterface;
 
         $hasOriginalIdentifier = isset($renderable->getRenderingOptions()['_originalIdentifier']);
         if ($isRepeatableContainer) {
@@ -104,7 +109,7 @@ class FormHooks
             $originalIdentifier = $renderable->getIdentifier();
             $renderable->setRenderingOption('_originalIdentifier', $originalIdentifier);
 
-            if($renderable instanceof AbstractFormElement && $renderable->getDefaultValue()) {
+            if ($renderable instanceof AbstractFormElement && $renderable->getDefaultValue()) {
                 $formRuntime->getFormDefinition()->addElementDefaultValue($newIdentifier, $renderable->getDefaultValue());
             }
 
@@ -139,14 +144,15 @@ class FormHooks
      * returns TRUE if the user went back to any previous step in the form.
      *
      * @param FormRuntime $formRuntime
-     * @param CompositeRenderableInterface $currentPage
-     * @param CompositeRenderableInterface $lastPage
+     * @param CompositeRenderableInterface|null $currentPage
+     * @param CompositeRenderableInterface|null $lastPage
+     *
      * @return bool
      */
     protected function userWentBackToPreviousStep(
         FormRuntime $formRuntime,
         CompositeRenderableInterface $currentPage = null,
-        CompositeRenderableInterface $lastPage = null
+        CompositeRenderableInterface $lastPage = null,
     ): bool {
         return $currentPage !== null
                 && $lastPage !== null
