@@ -1,32 +1,29 @@
-TYPO3:
-  CMS:
-    Form:
-      prototypes:
-        standard:
-          finishersDefinition:
-            ExtendedSaveToDatabase:
-              formEngine:
-                label: 'Extended SaveToDatabase Finisher'
-              implementationClassName: 'TRITUM\RepeatableFormElements\Finisher\SaveToDatabaseFinisher'
+prototypes:
+  standard:
+    finishersDefinition:
+      ExtendedSaveToDatabase:
+        formEngine:
+          label: 'Extended SaveToDatabase Finisher'
+        implementationClassName: 'TRITUM\RepeatableFormElements\Finisher\SaveToDatabaseFinisher'
 
-          formElementsDefinition:
-            Form:
-              renderingOptions:
-                translation:
-                  translationFile:
-                    10: 'EXT:form/Resources/Private/Language/locallang.xlf'
-                    1595333290: 'EXT:repeatable_form_elements/Resources/Private/Language/locallang.xlf'
-                  translationFiles:
-                    1595333290: 'EXT:repeatable_form_elements/Resources/Private/Language/locallang.xlf'
-                partialRootPaths:
-                  1595333290: 'EXT:repeatable_form_elements/Resources/Private/Frontend/Partials'
+    formElementsDefinition:
+      Form:
+        renderingOptions:
+          translation:
+            translationFile:
+              10: 'EXT:form/Resources/Private/Language/locallang.xlf'
+              1595333290: 'EXT:repeatable_form_elements/Resources/Private/Language/locallang.xlf'
+            translationFiles:
+              1595333290: 'EXT:repeatable_form_elements/Resources/Private/Language/locallang.xlf'
+          partialRootPaths:
+            1595333290: 'EXT:repeatable_form_elements/Resources/Private/Frontend/Partials'
 
-            RepeatableContainer:
-              __inheritances:
-                10: 'TYPO3.CMS.Form.prototypes.standard.formElementsDefinition.Fieldset'
-              implementationClassName: 'TRITUM\RepeatableFormElements\FormElements\RepeatableContainer'
-              properties:
-                minimumCopies: 0
-                maximumCopies: 10
-                showRemoveButton: true
-                elementClassAttribute: 'repeatable-container'
+      RepeatableContainer:
+        __inheritances:
+          10: 'TYPO3.CMS.Form.prototypes.standard.formElementsDefinition.Fieldset'
+        implementationClassName: 'TRITUM\RepeatableFormElements\FormElements\RepeatableContainer'
+        properties:
+          minimumCopies: 0
+          maximumCopies: 10
+          showRemoveButton: true
+          elementClassAttribute: 'repeatable-container'
