@@ -25,11 +25,7 @@ declare(strict_types=1);
 namespace TRITUM\RepeatableFormElements\Configuration;
 
 use TRITUM\RepeatableFormElements\Hooks\FormHooks;
-use TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider;
-use TYPO3\CMS\Core\Imaging\IconRegistry;
-use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Extension

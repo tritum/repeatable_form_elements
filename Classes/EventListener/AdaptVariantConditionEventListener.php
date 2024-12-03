@@ -13,12 +13,10 @@ namespace TRITUM\RepeatableFormElements\EventListener;
 
 use TRITUM\RepeatableFormElements\Event\CopyVariantEvent;
 
-
 /**
  * Replace original identifiers inside variant condition with identifiers of new element
  *
  * @param CopyVariantEvent $event
- * @return void
  */
 final class AdaptVariantConditionEventListener
 {
@@ -30,19 +28,19 @@ final class AdaptVariantConditionEventListener
         // get path strings for identifiers for replacement in condition
         // e.g. for `traverse(formValues, 'repeatablecontainer-1.0.checkbox-1')`
         $originalIdentifierAsPath = str_replace('.', '/', $originalIdentifier);
-        $newIdentifierAsPath      = str_replace('.', '/', $event->getNewIdentifier());
+        $newIdentifierAsPath = str_replace('.', '/', $event->getNewIdentifier());
 
         // adapt original condition to match identifier of the copied form element
         $options['condition'] = str_replace(
             [
                 $originalIdentifier,
-                $originalIdentifierAsPath
+                $originalIdentifierAsPath,
             ],
             [
                 $event->getNewIdentifier(),
-                $newIdentifierAsPath
+                $newIdentifierAsPath,
             ],
-            $options['condition']
+            $options['condition'],
         );
 
         $event->setOptions($options);

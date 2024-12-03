@@ -19,12 +19,12 @@ use TYPO3\CMS\Extbase\Domain\Model\FileReference;
 use TYPO3\CMS\Form\Domain\Model\FormElements\FormElementInterface;
 
 /**
- * This finisher is an extension to the default SaveToDatabaseFinisher. 
+ * This finisher is an extension to the default SaveToDatabaseFinisher.
  * It is intentionally registered as a new identifier to keep compatibility with existing forms.
  */
 class SaveToDatabaseFinisher extends \TYPO3\CMS\Form\Domain\Finishers\SaveToDatabaseFinisher
 {
-    protected function process(int $iterationCount)
+    protected function process(int $iterationCount): void
     {
         $this->throwExceptionOnInconsistentConfiguration();
 
@@ -68,10 +68,14 @@ class SaveToDatabaseFinisher extends \TYPO3\CMS\Form\Domain\Finishers\SaveToData
      * @param array $databaseData prepared data
      * @param string $table Tablename to save data to
      * @param int $iterationCount finisher iteration
-     * @return void
      */
-    protected function processContainer(string $containerPath, array $elementsConfiguration, array $databaseData, string $table, int $iterationCount)
-    {
+    protected function processContainer(
+        string $containerPath,
+        array $elementsConfiguration,
+        array $databaseData,
+        string $table,
+        int $iterationCount,
+    ): void {
         $containerValues = ArrayUtility::getValueByPath($this->getFormValues(), $containerPath, '.');
         foreach ($containerValues as $copyId => $containerItem) {
             $prefix = $containerPath . '.' . $copyId . '.';
@@ -90,8 +94,12 @@ class SaveToDatabaseFinisher extends \TYPO3\CMS\Form\Domain\Finishers\SaveToData
      * @param string $prefix prefix to get the form element object by a full identifier
      * @return array the filled database data
      */
-    protected function prepareData(array $elementsConfiguration, array $databaseData, array $values = [], string $prefix = ''): array
-    {
+    protected function prepareData(
+        array $elementsConfiguration,
+        array $databaseData,
+        array $values = [],
+        string $prefix = '',
+    ): array {
         if (empty($values)) {
             $values = $this->getFormValues();
         }
@@ -131,8 +139,12 @@ class SaveToDatabaseFinisher extends \TYPO3\CMS\Form\Domain\Finishers\SaveToData
      * $databaseData into the table $table
      * and provide some finisher variables
      */
-    protected function saveToDatabase(array $databaseData, string $table, int $iterationCount, ?int $containerItemKey = null)
-    {
+    protected function saveToDatabase(
+        array $databaseData,
+        string $table,
+        int $iterationCount,
+        ?int $containerItemKey = null,
+    ): void {
         if (!empty($databaseData)) {
             if ($this->parseOption('mode') === 'update') {
                 $whereClause = $this->parseOption('whereClause');
@@ -142,7 +154,7 @@ class SaveToDatabaseFinisher extends \TYPO3\CMS\Form\Domain\Finishers\SaveToData
                 $this->databaseConnection->update(
                     $table,
                     $databaseData,
-                    $whereClause
+                    $whereClause,
                 );
             } else {
                 $this->databaseConnection->insert($table, $databaseData);
@@ -150,18 +162,19 @@ class SaveToDatabaseFinisher extends \TYPO3\CMS\Form\Domain\Finishers\SaveToData
                 $this->finisherContext->getFinisherVariableProvider()->add(
                     $this->shortFinisherIdentifier,
                     'insertedUids.' . $iterationCount . (is_int($containerItemKey) ? '.' . $containerItemKey : ''),
-                    $insertedUid
+                    $insertedUid,
                 );
 
                 $currentCount = $this->finisherContext->getFinisherVariableProvider()->get(
                     $this->shortFinisherIdentifier,
-                    'countInserts.', $iterationCount,
-                    0
+                    'countInserts.',
+                    $iterationCount,
+                    0,
                 );
                 $this->finisherContext->getFinisherVariableProvider()->addOrUpdate(
                     $this->shortFinisherIdentifier,
                     'countInserts.' . $iterationCount,
-                    $currentCount++
+                    $currentCount++,
                 );
             }
         }

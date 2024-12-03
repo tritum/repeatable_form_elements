@@ -1,5 +1,7 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
+
 namespace TRITUM\RepeatableFormElements\FormElements;
 
 /**
@@ -10,6 +12,4 @@ namespace TRITUM\RepeatableFormElements\FormElements;
  */
 use TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface;
 
-interface RepeatableContainerInterface extends CompositeRenderableInterface
-{
-}
+interface RepeatableContainerInterface extends CompositeRenderableInterface {}

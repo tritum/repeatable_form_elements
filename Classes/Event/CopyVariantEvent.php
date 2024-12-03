@@ -25,16 +25,15 @@ class CopyVariantEvent
     private bool $variantEnabled = true;
 
     public function __construct(
-        array                $options,
+        array $options,
         FormElementInterface $originalFormElement,
         FormElementInterface $newFormElement,
-        string               $newIdentifier
-    )
-    {
-        $this->options             = $options;
+        string $newIdentifier,
+    ) {
+        $this->options = $options;
         $this->originalFormElement = $originalFormElement;
-        $this->newFormElement      = $newFormElement;
-        $this->newIdentifier       = $newIdentifier;
+        $this->newFormElement = $newFormElement;
+        $this->newIdentifier = $newIdentifier;
     }
 
     public function getOptions(): array
@@ -71,6 +70,4 @@ class CopyVariantEvent
     {
         $this->variantEnabled = $variantEnabled;
     }
-
-
 }
