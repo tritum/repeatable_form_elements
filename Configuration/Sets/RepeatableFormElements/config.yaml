@@ -1,0 +1,4 @@
+name: tritum/repeatable-form-elements
+label: "Form: Repeatable form elements"
+dependencies:
+  - typo3/form
