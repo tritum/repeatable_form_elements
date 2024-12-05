@@ -8,14 +8,17 @@ ready(() => {
     document.querySelectorAll('[data-repeatable-container][data-is-root]').forEach((rootElement) => {
         let containerClone = rootElement.cloneNode(true),
             containerIdentifier = rootElement.dataset['identifier'],
-            formIdentifier = rootElement.closest('form').getAttribute('id');
+            formIdentifier = rootElement.closest('form').getAttribute('id'),
+            copyButton = containerClone.querySelector('[data-repeatable-container][data-copy-button]');
 
         containerClones[formIdentifier] = containerClones[formIdentifier] || {};
 
         for (const copyElement of containerClone.querySelectorAll('[data-repeatable-container][data-is-copy]')) {
             copyElement.remove();
         }
-        containerClone.querySelector('[data-repeatable-container][data-copy-button]').remove();
+        if (copyButton !== null) {
+            copyButton.remove();
+        }
         for (const alertElement of containerClone.querySelectorAll('[role="alert"]')) {
             alertElement.remove();
         }
